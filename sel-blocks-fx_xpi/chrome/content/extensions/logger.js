@@ -1,4 +1,6 @@
 // selbocks name-space
+"use strict";
+
 (function($$){
 
   /* LOG wrapper for SelBlocks-specific behavior

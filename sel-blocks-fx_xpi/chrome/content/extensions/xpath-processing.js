@@ -1,6 +1,8 @@
 /** Provides richer functionality than is available via Selenium xpathEvaluator.
  *  Used only by locator-builders, because it assumes a Firefox environment.
  */
+"use strict";
+
 // selbocks name-space
 (function($$){
 

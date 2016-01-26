@@ -1,5 +1,6 @@
 /** Parse basic expressions.
 */
+"use strict";
 // selbocks name-space
 (function($$){
 

@@ -1,4 +1,6 @@
 // selbocks name-space
+"use strict";
+
 (function($$){
   /* This function replaces native Selenium command-handling for the exitScript command.
    * (See TestLoop.prototype.resume() in chrome/content/selenium-core/scripts/selenium-executionloop.js.)
