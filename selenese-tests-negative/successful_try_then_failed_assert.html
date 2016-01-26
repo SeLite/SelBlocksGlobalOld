@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://change-this-to-the-site-you-are-testing/" />
+<title>successful_try_then_failed_assert</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">successful_try_then_failed_assert</td></tr>
+</thead><tbody>
+<!--This tests that after processing an activated ctivated 'catch' clause the error handling returns to normal and it reports errors as it should-->
+<tr>
+	<td>function</td>
+	<td>clickAtNonExistingItem</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;click</td>
+	<td>NonExistingItem</td>
+	<td></td>
+</tr>
+<!--  Instead of clicking on a non-existing element, this could trigger a failed assert-->
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<!---->
+<tr>
+	<td>if</td>
+	<td>true</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;try</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;call</td>
+	<td>clickAtNonExistingItem</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;catch</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;endTry</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>endIf</td>
+	<td></td>
+	<td></td>
+</tr>
+<!---->
+<tr>
+	<td>assertEval</td>
+	<td>false</td>
+	<td>thisWillFail</td>
+</tr>
+</tbody></table>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="https://cdn.rawgit.com/selite/selite/master/extension-sequencer/src/chrome/content/selenese_reference_to_html.xsl"?>
+<!-- If you'd like to preview this reference.xml in Firefox, open it either
+- online at https://cdn.rawgit.com/selite/sel-blocks-global/master/src/chrome/content/reference.xml, or
+- offline at chrome://selite-extension-sequencer/content/selenese_reference.html?chrome://selite-selblocks-global/content/reference.xml
+Xml-stylesheet (whether remote or even local) didn't load up work when you open this in a browser locally via file://
+-->
+<apidoc package-name="SelBlocks Global">
+<function name="label">
+    <comment>Declares a label for 'goto' command.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="skipNext">
+    <param name="amount">Number of commands to skip. Default 1.</param>
+    <comment>Skip one or several next commands, as given in parameter <code>amount</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="goto">
+    <param name="label">Name of a label to go to</param>
+    <comment>Go to the position at the given label.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="gotoIf">
+    <param name="condExpr">Condition expression. If it evaluates to true (compared non-strictly),
+        then the control goes to a statement at the given label.
+    </param>
+    <param name="label">Name of a label to go to</param>
+    <comment>Go to the position at the given label, if condExpr evaluates to true (compared non-strictly).
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="if">
+    <param name="condExpr">Condition expression. It determines whether to run
+        the positive branch or negative branch (if present).
+    </param>
+    <comment>Conditional statement and a start of its positive branch.
+        It evaluates given <code>condExpr</code>.
+        If it evaluates to true (compared non-strictly), then the control flow continues
+        until the matching <code>endIf</code> or matching <code>else</code> (or <code>elseIf</code>). Otherwise,
+        any <code>elseIf</code> steps are considered. If none of them has condition that is true and if there is a matching <code>else</code> statement, then the control continues from there
+        (the negative branch). Otherwise it continues from the matching <code>endIf</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="elseIf">
+    <param name="condExpr">Condition expression. It determines whether to run
+        the positive branch or negative branch (if present).
+    </param>
+    <comment>Conditional sub-statement and a start of its positive branch.
+      It can be used only after an <code>if</code> (or after any previous <code>elseIf</code> step(s)). It must be located before <code>endIf</code> of the matching <code>if</code>.
+        If the matching <code>if</code> had a false condition (and if any and all <code>elseIf</code> steps had false condition(s)), then this <code>elseIf</code> evaluates its <code>condExpr</code>.
+        If that is true (compared non-strictly), then the control flow continues
+        until the matching <code>endIf</code> or matching <code>else</code> (or until next <code>elseIf</code>). Otherwise,
+        if there is a matching <code>else</code> statement, then the control continues from there
+        (the negative branch). Otherwise it continues from the matching <code>endIf</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="else">
+    <comment>Negative branch of a matching <code>if</code> statement; optional. If the matching <code>if</code>
+        evaluated its condition as false (compared non-strictly), then it passes the control here.
+        <br/>If the condition evaluated as true (compared non-strictly), then the positive branch was
+        processed (i.e. any statements between the matching <code>if</code> and this <code>else</code>).
+        On reaching this <code>else</code>, the control skips this negative branch and continues from the
+        matching <code>endIf</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endIf">
+    <comment>End of conditional statement. After evaluating the condition of the matching <code>if</code>
+        and after running its positive (<code>if</code>) branch or its negative branch
+        (<code>else</code>, if present), the control switches here. <code>endIf</code> ends the whole
+        <code>if</code> (and optional <code>else</code>) structure. It ends the negative
+        branch (<code>else</code>, if present), otherwise it ends the positive branch (<code>if</code>).
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="while">
+    <param name="condExpr">Condition expression.
+    </param>
+    <comment>Conditional loop statement. As far as it evaluates to true (compared non-strictly),
+        it keeps running all statements up to the matching <code>endWhile</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endWhile">
+    <comment>End of the matching <code>while</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="for">
+    <param name="forSpec">Composite defining loop bounds and repetition condition,
+        C/C++/Java/Javascript/PHP-like,
+        in 3 parts separated by semicolons: <code>initiation; condition; iteration</code>.
+        For example: <code>$i=0; $i&lt;=100; $i++</code>
+    </param>
+    <param name="localVarsSpec">List of variable(s) used in either initiation, condition
+        or iteration parts of parameter <code>forSpec</code>.
+    </param>
+    <comment>Loop with initiation, condition for repetition and iteration.
+        First, it evaluates the initiation part of parameter <code>forSpec</code>.
+        Then it evaluates the condition part of <code>forSpec</code>. If true (compared non-strictly), it runs any
+        statement(s) between this <code>for</code> and its matching <code>endFor</code>.
+        On reaching the matching <code>endFor</code>, it evaluates iteration part of <code>forSpec</code>.
+        Then it evaluates the condition part again and if true, it repeats the statements again...
+        When the condition part evaluates to false (compared non-strictly), it passes the control
+        to the matching <code>endFor</code> statement.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endFor">
+    <comment>End of <code>for</code> loop.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="foreach">
+    <param name="varName">Variable name, that will be assigned values from <code>valueExpr</code>.</param>
+    <param name="valueExpr">Comma-separated values or expressions, that will be iterated through. Can be empty.</param>
+    <comment>It iterates through given list of values/expressions, assigning each
+        to a stored variable with name <code>varName</code>. For each value, it then runs statement(s)
+        up to the matching <code>endForeach</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endForeach">
+    <comment>End of the matching <code>foreach</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="loadVars">
+    <comment>Deprecated. Use <code>loadXmlVars</code> instead.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="loadXmlVars">
+    <param name="xmlfile">File path or a file:// URI to an xml file to load. If it's not a file:// URL, then it should be relative to location of the test case (not the test suite). Value sets is loaded from &lt;vars&gt; element(s).</param>
+    <param name="selector">Boolean condition to select a set of values from the XML. Optional; if not present,
+        then the XML must have exactly one set of variables - one element &lt;vars&gt;.
+    </param>
+    <comment>
+        Load a set of variable(s) from an XML. If condition is present, then
+        <code>loadVars</code> keeps reading sets of values from XML, until the condition evaluates
+        to true (compared non-strictly). If it reaches the end of XML and the condition is still false,
+        <code>loadVars</code> fails. Each set of variable(s) is within its &lt;vars&gt; element.
+        See original reference at <a href="http://refactoror.wikia.com/wiki/Selblocks_Reference">http://refactoror.wikia.com/wiki/Selblocks_Reference</a> for more.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="loadJsonVars">
+    <comment>Similar to loadXmlVars, but this is for JSON. See loadXmlVars.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="forXml">
+    <param name="xmlpath">File path or a file:// URL to an XML file. You can enter path to the file, relative to location of the current test case (not the test suite). (You can use Windows or Unix folder separators \ or /). In order to pass a full absolute path, enter file://...</param>
+    <comment>An XML-based loop. (I think that) on each iteration, it loads a set of variables from the XML
+    (one set of variables per one element &lt;vars&gt;). Then it runs any statement(s) up to the matching <code>endForXml</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endForXml">
+    <comment>End of the matching <code>forXml</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="forJson">
+    <param name="jsonpath">File path or a file:// URL to a JSON file. You can enter path to the file, relative to location of the current test case (not the test suite). (You can use Windows or Unix folder separators \ or /). In order to pass a full absolute path, enter file://...</param>
+    <comment>This doesn't work well and I believe it didn't work well in original SelBlocks either. Developers: see @TODO in selblocks.js. Doc. once fixed: A JSON-based loop. (I think that) on each iteration, it loads a set of variables from the given file which should contain them in JSON notation. Then it runs any statement(s) up to the matching <code>endForXml</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endForJson">
+    <comment>End of the matching <code>forJson</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="continue">
+  <comment>Jump back to top of the current (innermost active) loop (either <code>for</code>, <code>foreach</code>, <code>while</code>, <code>forJson</code> or <code>forXml</code>) for next iteration, if any.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+  </comment>
+</function>
+<function name="break">
+    <comment>Jump back to the bottom of the current (innermost active) loop and exit it.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="call">
+    <param name="srcName">Name of the script to call.</param>
+    <param name="argSpec">Argument(s) passed to the called script, optional.
+        Comma-separated assignments in form <code>variableName=expression</code>.
+        You can use <code>$storedVariableName</code> to access stored variables in <code>expression</code>.
+    </param>
+    <comment>Call a script with the given name. Just like calling a function/method in common
+        programming languages. It
+        <ol>
+            <li>saves any stored variables, and it removes them from the current scope</li>
+            <li>puts all given arguments to the current scope of stored variables</li>
+            <li>passes control to the called <code>script</code></li>
+        </ol>
+        The called script may be in a different test case, as far as it's a part of the same test suite (this
+        is how SelBlocks Global differs from SelBlocks). If the called script finishes
+        correctly - either at its <code>endScript</code> or <code>return</code> (if present) - then
+        <ol>
+            <li>the control is passed back to the caller</li>
+            <li>any stored variables from the called script are lost</li>
+            <li>the original stored variables are loaded to the scope</li>
+            <li>any returned result from the called script is avaliable in stored variable <code>_result</code></li>
+        </ol>
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="function">
+    <comment>Start of a script, which is a callable block, like a function/method in common programming languages.
+        It gets invoked via <code>call</code> statement. It can (optionally) receive parameter(s)
+        and it can (optionally) return a value via <code>return</code>.
+        It has a separate scope of stored variables. It contains statement(s) up to the nearest <code>endScript</code>.
+        It can call other scripts via <code>call</code>, but it cannot contain other scripts within itself.
+        It can call itself recursively, either directly or indirectly.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="return">
+    <param name="value">Value/expression to evaluate and return.</param>
+    <comment>It ends the currently executed <code>function</code>, returning the
+        flow control to the caller and passing given value as stored variable <code>_result</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endFunction">
+    <comment>It ends the currently executed <code>function</code>, returning the
+        flow control to the caller, without setting stored variable <code>_result</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="exitTest">
+    <comment>It ends the current test run.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="try">
+    <param name="tryName">Label-like name of this try block, used for validation of proper pairing; optional.</param>
+    <comment>
+        It starts a <code>try..catch..finally..endTry</code> block. If there is any exception/error within this block, then any subsequent steps are skipped and it runs the <code>catch</code> part (optional). If there's a <code>finally</code> part, that gets executed whether the <code>try</code> part was successful or not.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="catch">
+    <param name="errorTextOrRegExp">Error message to catch, optional. If present, it must be a Javascript expression that evaluates to a string or to a regular expression, matching the whole error message or its substring. E.g. a string quoted within '..' or "..." , or a regular expression within /.../.</param>
+    <comment>
+        It starts a <code>catch</code> part of its <code>try..catch..finally..endTry</code> block. If there was a matching exception, then its steps are run (until <code>finally</code> or matching <code>endTry</code>). There can be maximum one <code>catch</code> for any <code>try</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="finally">
+    <comment>
+        It starts a <code>finally</code> part of its <code>try..catch..finally..endTry</code> block. Steps between <code>finally</code> and its ending <code>endTry</code> are executed, whether there was any error/exception or not (unless the testing stopped for some other reason, e.g. <code>exitTest</code>).
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endTry">
+    <param name="tryName">Label-like name of this try block, used for validation of proper pairing; optional.</param>
+    <comment>End of <code>try..catch..finally..endTry</code> block.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="throw">
+    <param name="error">A Javascript expression, that yields a string or an error. If it's a string literal, enclose it in apostrophes or quotes.</param>
+    <comment>Throw an error.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+</apidoc>

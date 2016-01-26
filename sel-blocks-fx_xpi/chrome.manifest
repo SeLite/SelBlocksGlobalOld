@@ -1,5 +1,5 @@
-content selblocksSeleExten             chrome/content/
-skin    selblocksSeleExten classic/1.0 chrome/skin/
+content selite-selblocks-global  chrome/content/
+skin selite-selblocks-global classic chrome/skin/
 
 # custom extension(s)
-overlay chrome://selenium-ide/content/selenium-ide-overlay.xul chrome://selblocksSeleExten/content/extensions/extension-loader.xul
+overlay chrome://browser/content/browser.xul chrome://selite-selblocks-global/content/extensions/browser.xul

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://change-this-to-the-site-you-are-testing/" />
+<title>use_data_from_files_case</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">use_data_from_files_case</td></tr>
+</thead><tbody>
+<tr>
+	<td>loadXmlVars</td>
+	<td>file://` SeLiteSettings.getTestSuiteFolder() `/varset.xml</td>
+	<td>storedVars.userid===&quot;dilbert&quot;</td>
+</tr>
+<tr>
+	<td>assertEval</td>
+	<td>storedVars.role</td>
+	<td>superuser</td>
+</tr>
+<!---->
+<tr>
+	<td>loadJsonVars</td>
+	<td>file://` SeLiteSettings.getTestSuiteFolder() `/varset.json</td>
+	<td>storedVars.userid===&quot;dilbert&quot;</td>
+</tr>
+<tr>
+	<td>assertEval</td>
+	<td>storedVars.role</td>
+	<td>superuser</td>
+</tr>
+<!---->
+<tr>
+	<td>loadJsonVars</td>
+	<td>file://` SeLiteSettings.getTestSuiteFolder() `/varset.json</td>
+	<td>storedVars.userid===&quot;wally&quot;</td>
+</tr>
+<tr>
+	<td>assertEval</td>
+	<td>storedVars.role</td>
+	<td>lazyuser</td>
+</tr>
+</tbody></table>
+</body>
+</html>

@@ -1,0 +1,4 @@
+[
+  { "userid": "dilbert", "role": "superuser" },
+  { userid: "wally",   "role": "lazyuser" }
+]

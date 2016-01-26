@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://change-this-to-the-site-you-are-testing/" />
+<title>try_catch_finally_case</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">try_catch_finally_case</td></tr>
+</thead><tbody>
+<!--This is intended to fail. Selenium IDE should stop playing the test case and it should not be in a 'paused' mode.-->
+<!--This is for/similar to https://github.com/refactoror/SelBlocks/issues/11 and https://github.com/refactoror/SelBlocks/issues/12-->
+<tr>
+	<td>try</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>throw</td>
+	<td>'throw_test'</td>
+	<td></td>
+</tr>
+<!--this is missing 'catch' by purpose-->
+<tr>
+	<td>endTry</td>
+	<td></td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

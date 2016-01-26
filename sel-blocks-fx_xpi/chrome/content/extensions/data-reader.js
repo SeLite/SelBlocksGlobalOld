@@ -1,3 +1,10 @@
+/* Copyright 2011 Chris Noe
+ * Copyright 2015, 2016 Peter Kehl
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 1.1. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/1.1/.
+ */
+"use strict";
 // SelBlocks name-space
 (function($$){
 
@@ -6,7 +13,7 @@
 
   // ==================== XmlReader ====================
 
-  $$.fn.XmlReader = function()
+  $$.fn.XmlReader = function XmlReader()
   {
     var varsets = null;
     var varNames = null;
@@ -14,7 +21,7 @@
     var varsetIdx = 0;
 
     // load XML file and return the list of var names found in the first <VARS> element
-    this.load = function(filepath)
+    this.load = function load(filepath)
     {
       var xmlHttpReq = doAjaxRequest(filepath, "text/xml");
       var fileObj = xmlHttpReq.responseXML; // XML DOM
@@ -24,37 +31,38 @@
       }
 
       curVars = 0;
-      varNames = attrNamesFor(varsets[0]);
+      varNames = $$.fn.XmlReader.attrNamesFor(varsets[0]);
       return varNames;
     };
 
-    this.EOF = function() {
+    this.EOF = function EOF() {
       return (curVars === null || curVars >= varsets.length);
     };
 
-    this.next = function()
+    this.next = function next()
     {
       if (this.EOF()) {
         $$.LOG.error("No more <vars> elements to read after element #" + varsetIdx);
         return;
       }
       varsetIdx++;
-      $$.LOG.debug(varsetIdx + ") " + serializeXml(varsets[curVars]));  // log each name & value
+      $$.LOG.debug(varsetIdx + ") " + $$.fn.XmlReader.serializeXml(varsets[curVars]));  // log each name & value
 
-      var expected = countAttrs(varsets[0]);
-      var found = countAttrs(varsets[curVars]);
+      var expected = $$.fn.XmlReader.countAttrs(varsets[0]);
+      var found = $$.fn.XmlReader.countAttrs(varsets[curVars]);
       if (found !== expected) {
         throw new Error("Inconsistent <testdata> at <vars> element #" + varsetIdx
           + "; expected " + expected + " attributes, but found " + found + "."
           + " Each <vars> element must have the same set of attributes."
         );
       }
-      setupStoredVars(varsets[curVars]);
+      $$.fn.XmlReader.setupStoredVars(varsets[curVars]);
       curVars++;
     };
+  };
 
     //- retrieve the names of each attribute on the given XML node
-    function attrNamesFor(node) {
+    $$.fn.XmlReader.attrNamesFor= function attrNamesFor(node) {
       var attrNames = [];
       var varAttrs = node.attributes; // NamedNodeMap
       var v;
@@ -62,15 +70,15 @@
         attrNames.push(varAttrs[v].nodeName);
       }
       return attrNames;
-    }
+    };
 
     //- determine how many attributes are present on the given node
-    function countAttrs(node) {
+    $$.fn.XmlReader.countAttrs= function countAttrs(node) {
       return node.attributes.length;
-    }
+    };
 
     //- set selenium variables from given XML attributes
-    function setupStoredVars(node) {
+    $$.fn.XmlReader.setupStoredVars= function setupStoredVars(node) {
       var varAttrs = node.attributes; // NamedNodeMap
       var v;
       for (v = 0; v < varAttrs.length; v++) {
@@ -83,21 +91,20 @@
         }
         storedVars[attr.nodeName] = attr.nodeValue;
       }
-    }
+    };
 
     //- format the given XML node for display
-    function serializeXml(node) {
+    $$.fn.XmlReader.serializeXml= function serializeXml(node) {
       if (XMLSerializer !== "undefined") {
         return (new XMLSerializer()).serializeToString(node) ;
       }
       if (node.xml) { return node.xml; }
       throw "XMLSerializer is not supported or can't serialize " + node;
-    }
-  }
+    };
 
   // ==================== JSONReader ====================
 
-  $$.fn.JSONReader = function()
+  $$.fn.JSONReader = function JSONReader()
   {
     var varsets = null;
     var varNames = null;
@@ -121,22 +128,22 @@
       }
 
       curVars = 0;
-      varNames = attrNamesFor(varsets[0]);
+      varNames = $$.fn.JSONReader.attrNamesFor(varsets[0]);
       return varNames;
     };
 
-    this.EOF = function() {
+    this.EOF = function EOF() {
       return (curVars === null || curVars >= varsets.length);
     };
 
-    this.next = function()
+    this.next = function next()
     {
       if (this.EOF()) {
         $$.LOG.error("No more JSON objects to read after object #" + varsetIdx);
         return;
       }
       varsetIdx++;
-      $$.LOG.debug(varsetIdx + ") " + serializeJson(varsets[curVars]));  // log each name & value
+      $$.LOG.debug(varsetIdx + ") " + $$.fn.JSONReader.serializeJson(varsets[curVars]));  // log each name & value
 
       var expected = countAttrs(varsets[0]);
       var found = countAttrs(varsets[curVars]);
@@ -146,32 +153,33 @@
           + " Each JSON object must have the same set of attributes."
         );
       }
-      setupStoredVars(varsets[curVars]);
+      $$.fn.JSONReader.setupStoredVars(varsets[curVars]);
       curVars++;
     };
+  };
 
     //- retrieve the names of each attribute on the given object
-    function attrNamesFor(obj) {
+    $$.fn.JSONReader.attrNamesFor= function attrNamesFor(obj) {
       var attrNames = [];
       var attrName;
       for (attrName in obj) {
         attrNames.push(attrName);
       }
       return attrNames;
-    }
+    };
 
     //- determine how many attributes are present on the given obj
-    function countAttrs(obj) {
+    $$.fn.JSONReader.countAttrs= function countAttrs(obj) {
       var n = 0;
       var attrName;
       for (attrName in obj) {
         n++;
       }
       return n;
-    }
+    };
 
     //- set selenium variables from given JSON attributes
-    function setupStoredVars(obj) {
+    $$.fn.JSONReader.setupStoredVars= function setupStoredVars(obj) {
       var attrName;
       for (attrName in obj) {
         if (null === varsets[0][attrName]) {
@@ -182,10 +190,10 @@
         }
         storedVars[attrName] = obj[attrName];
       }
-    }
+    };
 
     //- format the given JSON object for display
-    function serializeJson(obj) {
+    $$.fn.JSONReader.serializeJson= function serializeJson(obj) {
       // firefox provides uneval()
       if (typeof uneval === "function") {
         var json = uneval(obj);
@@ -197,8 +205,7 @@
         buf += " " + attr + ": " + obj[attr];
       }
       return "{" + buf + " }";
-    }
-  }
+    };
 
   function doAjaxRequest(filepath, mimeType)
   {

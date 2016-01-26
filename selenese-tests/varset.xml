@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<testdata>
+  <vars userid="dilbert" role="superuser" />
+  <vars userid="wally"   role="lazyuser" />
+</testdata>

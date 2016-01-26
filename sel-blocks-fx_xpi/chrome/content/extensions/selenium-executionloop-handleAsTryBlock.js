@@ -1,49 +1,68 @@
+/* Copyright 2011 Chris Noe
+ * Copyright 2015, 2016 Peter Kehl
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 1.1. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/1.1/.
+ */
+"use strict";
+
 // selbocks name-space
 (function($$){
-  /* This function replaces native Selenium command-handling while inside a try block.
-   * (See TestLoop.prototype.resume() in chrome/content/selenium-core/scripts/selenium-executionloop.js.)
-   * Command processing is altered so that catch and/or finally processing is initiated upon error.
+  // Based on a part of $$.handleAsTryBlock from SelBlocks
+  $$.testLoopResumeHandleFailedResult= function testLoopResumeHandleFailedResult() {
+      // Selenium IDE doesn't stop running on verifications. Therefore verifications shouldn't trigger 'catch' clause. However, we do suppress making the test case marked as failed, and we log at info level only.
+      LOG.info( "try..catch..endTry suppressed verification failure from command: " + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |");
+      this.result.failed= false;
+      this.result.passed= true;
+  };
+  
+  // Based on a part of $$.handleAsTryBlock from SelBlocks
+  $$.testLoopResumeHandleError= function testLoopResumeHandleError( e ) {
+      var originalMessage= e.message; // Selenium IDE generates 'false' message for failed assertions, and those then would only match catch | 'false' |. Following makes them catchable by the actual assertion message.
+      if( e.message==='false' ) {
+          e.message= this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |";
+      }
+      if( /*isManaged*/$$.fn.getInterceptTop() && $$.fn.getInterceptTop().attrs.manageError(e) ) {
+        var message= originalMessage!=='false'
+            ? '. The message: ' +originalMessage
+            : '';
+        LOG.info( 'try..catch..endTry caught an exception or assert failure from command: ' + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |" +message );   
+        this.continueTest();
+      } else {
+        this._handleCommandError(e); // causes command to be marked in red
+        this.testComplete();
+      }
+  };
+  
+  /* This function replaces native Selenium command handling while inside a try block.
    */
   $$.handleAsTryBlock = function()
   {
     try {
       selenium.browserbot.runScheduledPollers();
       this._executeCurrentCommand();
-      if (this.result.failed && isManaged(this.result)) {
-        // a failed verify command has activated catch/finally bubbling
+      if( this.result.failed /*no need for isManaged()*/ ) {
+          // Selenium IDE doesn't stop running on verifications. Therefore verifications shouldn't trigger 'catch' clause. However, we do suppress making the test case marked as failed, and we log at info level only.
+          LOG.info( "try..catch..endTry suppressed verification failure from command: " + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |");
+          this.result.failed= false;
+          this.result.passed= true;
+      }
+      this.continueTestWhenConditionIsTrue();
+    } catch (e) {
+      var originalMessage= e.message; // Selenium IDE generates 'false' message for failed assertions, and those then would only match catch | 'false' |. Following makes them catchable by the actual assertion message.
+      if( e.message==='false' ) {
+          e.message= this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |";
+      }
+      if( /*isManaged*/$$.fn.getInterceptTop() && $$.fn.getInterceptTop().attrs.manageError(e) ) {
+        var message= originalMessage!=='false'
+            ? '. The message: ' +originalMessage
+            : '';
+        LOG.info( 'try..catch..endTry caught an exception or assert failure from command: ' + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |" +message );   
         this.continueTest();
+      } else {
+        this._handleCommandError(e); // causes command to be marked in red
+        this.testComplete();
       }
-      else {
-        // normal Selenium behavior
-        this.continueTestWhenConditionIsTrue();
-      }
-    }
-    catch (e) {
-      if (isManaged(e)) {
-        // a caught error has activated catch/finally bubbling
-        this.continueTest();
-      }
-      else {
-        // normal Selenium behavior
-        if (!this._handleCommandError(e)) {
-          // command is marked in red, and overall test status is failed
-          this.testComplete();
-        }
-        else {
-          // error has been otherwise handled by TestLoop.prototype._handleCommandError()
-          // (not sure what the possibilities are, other than stopping and failing the script)
-          this.continueTest();
-        }
-      }
-    }
-
-    //- determine if the error is caught or otherwise being bubbled
-    function isManaged(e) {
-      var interceptFrame = $$.fn.getInterceptTop();
-      if (e.constructor.name == "AssertResult") {
-        e = new Error(e.failureMessage);
-      }
-      return (interceptFrame && interceptFrame.attrs.manageError(e));
     }
   };
 
