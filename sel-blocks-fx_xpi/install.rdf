@@ -8,7 +8,7 @@
     <em:creator>Chris Noe, Peter Kehl</em:creator>
     <em:description>For structured automated test scripts in Selenium-IDE</em:description>
     <em:type>2</em:type> <!--Type extension-->
-    <em:homepageURL>http://selite.github.io</em:homepageURL>
+    <em:homepageURL>http://selite.github.io/SelBlocksGlobal</em:homepageURL>
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
