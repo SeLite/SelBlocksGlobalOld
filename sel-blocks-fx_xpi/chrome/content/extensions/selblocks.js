@@ -466,7 +466,7 @@ var expandStoredVars;
            : -1;
     }
     else {
-      // SelBlocksGlobal hook for SeLite Bootstrap. @TODO This shouldn't be here, but in testcase-debug-context. However, that would currently be a pain in the neck due to http://code.google.com/p/selenium/issues/detail?id=6697 and https://code.google.com/p/selenium/issues/detail?id=5495.
+      // SelBlocksGlobal hook for SeLite Bootstrap. @TODO This shouldn't be here, but in testcase-debug-context. However, that would currently be a pain in the neck due to https://github.com/SeleniumHQ/selenium/issues/1537 and https://github.com/SeleniumHQ/selenium/issues/1549 (listed in ThirdPartyIssues.md).
       if( typeof Selenium.reloadScripts==='function' ) { // SeLite Bootstrap is loaded
           LOG.debug('selblocks calling Selenium.reloadScripts()');
           Selenium.reloadScripts();
