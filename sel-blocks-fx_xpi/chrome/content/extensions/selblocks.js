@@ -348,8 +348,7 @@ var expandStoredVars;
   /** @param {number} [relativeShift=0] Relative shift to the current command's position
    *  @return {number} Current command's position (within current test case), adjusted by relativeShift. Depending on relativeShift the result may not be a valid position.
    * */
-  var localIdxHere= function localIdxHere( relativeShift ) {
-    relativeShift= relativeShift || 0;
+  var localIdxHere= function localIdxHere( relativeShift=0 ) {
     return testCase.debugContext.debugIndex+relativeShift;
   };
 
@@ -376,12 +375,12 @@ var expandStoredVars;
        *  @return {object} A new entry just added to this collection.
        *  @see variable blkDefs
        **/
-      blkDefs.init = function BlockDefsInit(i, attrs) {
+      blkDefs.init = function BlockDefsInit(i, attrs={} ) {
         assert( typeof testCase.commands ==='object', 'BlockDefs::init() - testCase.commands is of bad type.');
         // @TODO assert regex numeric/numeric
         assert( typeof i ==='string', 'BlockDefs::init() - param i must be a globIdx() result.');
         // @TODO change to use 'this' instead of 'blkDefs' - it will be clearer.
-        blkDefs[i] = attrs || {};
+        blkDefs[i] = attrs;
         blkDefs[i].idx = i;
         // Following line is from original SelBlocks, here just for documentation
         //blkDefs[i].cmdName = testCase.commands[i].command;
@@ -599,8 +598,8 @@ var expandStoredVars;
         ", AndWait suffix is not valid for SelBlocks commands");
     };
     //- active block validation
-    var assertBlockIsPending= function assertBlockIsPending(lexStack, expectedCmd, cmdIdx, desc) {
-      assertCmd(cmdIdx, !lexStack.isEmpty(), desc || ", without an beginning [" + expectedCmd + "]");
+    var assertBlockIsPending= function assertBlockIsPending(lexStack, expectedCmd, cmdIdx, desc=", without an beginning [" + expectedCmd + "]" ) {
+      assertCmd(cmdIdx, !lexStack.isEmpty(), desc);
     };
     //- command-pairing validation
     var assertMatching= function assertMatching(curCmd, expectedCmd, cmdIdx, pendIdx) {
@@ -1814,9 +1813,9 @@ var expandStoredVars;
 
   // ========= error handling =========
 
-  var SelblocksError= function SelblocksError(idx, message) {
+  var SelblocksError= function SelblocksError(idx, message='') {
     this.name = "SelblocksError";
-    this.message = (message || "");
+    this.message = message;
     this.idx = idx;
   };
   SelblocksError.prototype = Error.prototype;
@@ -1863,8 +1862,8 @@ var expandStoredVars;
   };
 
   Selenium.prototype.assertCompilable= function assertCompilable(left, stmt, right, explanation) {
-    try {//@TODO Minor: Peter disabled this, because it refuses back apostrophe notation - in override of preprocessParameter()
-      //this.evalWithExpandedStoredVars("function selblocksTemp() { " + left + stmt + right + " }");
+    try {
+      this.evalWithExpandedStoredVars("function selblocksTemp() { " + left + stmt + right + " }");
     }
     catch (e) {
       throw new SyntaxError(fmtCmdRef(idxHere()) + " " + explanation + " '" + stmt +  "': " + e.message);
@@ -2192,18 +2191,18 @@ var expandStoredVars;
 (function() {
     var originalPreprocessParameter= Selenium.prototype.preprocessParameter;
     // This sets a head intercept of chrome/content/selenium-core/scripts/selenium-api.js. See http://selite.github.io/EnhancedSelenese.
-    var enclosedByEqualsBackApostrophes= /^=`(([^`]|``)*)`$/g; // For handling =`..`
-    // This adds support for javascript expressions enclosed with `..`, \`..` or @`..`
+    var enclosedByEqualsSpecialPairs= /^=<>(((?!<>).)*)<>$/g; // For handling =<>...<>
+    // This adds support for javascript expressions enclosed with <>...<>, \<>...<> or @<>...<>
     // as documented at http://selite.github.io/EnhancedSelenese.
-    // If the user wants to pass a backapostrophe to the result, double it - ``.
-    // The 3rd captured group - the postfix - is guaranteed not to end with # or @  that would be just before the next occurrence of `..` (if any)
-    var enclosedByBackApostrophes= /((?:[^`]|``)*)`((?:[^`]|``)+)`((?:[^`#@]|``|[#@](?!`))*)/g;
-    var doubledBackApostrophe= /``/g;
+    // If the user wants to actually pass a string '<>' to the result, she or he has to work around this (e.g. by generating it in a Javascript expression).
+    // The 3rd captured group - the postfix - is guaranteed not to end with # or @  that would be just before the next occurrence of <>...<> (if any)
+    // Levels of regex. parenthesis 12  3    3 2 1  12  3    3 2 1  12  3    3          3    32 1
+    var enclosedBySpecialPairs= /((?:(?!<>).)*)<>((?:(?!<>).)+)<>((?:(?!<>)[^#@]|[#@](?!<>))*)/g;
     Selenium.prototype.preprocessParameter = function selBlocksGlobalPreprocessParameter(whole) {
         // javascript{..} doesn't replace ${variableName}.
         // Selenese ${variableName} requires {}, which is good because it separates it from the rest of the target/value,
         // so it's robust yet easy to use.
-        // `..` replaces $xxx by the symbol/reference to the stored variable, so it is typed and it doesn't need to be quoted for Javascript processing.
+        // <>...<> replaces $xxx by the symbol/reference to the stored variable, so it is typed and it doesn't need to be quoted for Javascript processing.
         
         /** string{} - evaluate the expression and cast it as a string. Access stored variables using $xyz. If the stored
             variable is an object/array, you can access its fields - i.e. $object-var-name.fieldXYZ or $array-var-name[index].
@@ -2213,38 +2212,36 @@ var expandStoredVars;
              object as the second parameter to 'typeRandom' action (function doTypeRandom).
         */
         LOG.debug('SeLite SelBlocks Global head override of preprocessParameter(): ' +whole );
-        var numberOfBackApostrophes= 0;
-        for( var i=0; i<whole.length; i++ ) {
-            if( whole[i]==='`' ) {
-                numberOfBackApostrophes++;
+        var numberOfSpecialPairs= 0;
+        for( var i=1; i<whole.length; i++ ) {
+            if( whole[i-1]==='<' && whole[i]==='>' ) {
+                numberOfSpecialPairs++;
+                i++;
             }
         }
-        numberOfBackApostrophes%2===0 || SeLiteMisc.fail( "SeLite SelBlocks Global and its http://selite.github.io/EnhancedSelenese doesn't allow Selenese parameters to contain an odd number of back apostrophes `. The parameter value was: " +whole );
-        // Match `..`, \`..`, =`..` and @`..`. Replace $xx parts with respective stored variables. Evaluate. If it was \`..`, then escape it as an XPath string. If it was @`...`, then make the rest a String object (rather than a string primitive) and store thesult of Javascript in field seLiteExtra on that String object.
-        // I don't replace through a callback function - e.g. whole.replace( enclosedByBackApostrophes, function replacer(match, field) {..} ) - because that would always cast the replacement result as string.
+        numberOfSpecialPairs%2===0 || SeLiteMisc.fail( "SeLite SelBlocks Global and its http://selite.github.io/EnhancedSelenese doesn't allow Selenese parameters to contain an odd number of character pairs <>. The parameter value was: " +whole );
+        // Match <>...<>, \<>...<>, =<>...<> and @<>...<>. Replace $xx parts with respective stored variables. Evaluate. If it was \<>...<>, then escape it as an XPath string. If it was @<>...<>, then make the rest a String object (rather than a string primitive) and store thesult of Javascript in field seLiteExtra on that String object.
+        // I don't replace through a callback function - e.g. whole.replace( enclosedBySpecialPairs, function replacer(match, field) {..} ) - because that would always cast the replacement result as string.
         var match;
-        enclosedByEqualsBackApostrophes.lastIndex= 0;
-        if( match=enclosedByEqualsBackApostrophes.exec(whole) ) {
-            var expression= match[1].replace( doubledBackApostrophe, '`' );
-            return this.evalWithExpandedStoredVars( this.replaceVariables(expression) ); // evalWithExpandedStoredVars() calls expandStoredVars()
+        enclosedByEqualsSpecialPairs.lastIndex= 0;
+        if( match=enclosedByEqualsSpecialPairs.exec(whole) ) {
+           return this.evalWithExpandedStoredVars( this.replaceVariables(match[1]) ); // evalWithExpandedStoredVars() calls expandStoredVars()
         }
         else {
-            enclosedByBackApostrophes.lastIndex=0;
-            var hasExtra= false; // Whether there is @`..`
-            var extra; // The extra value: result of Javascript from @`..`
-            /** @type {boolean} Whether <code>result</code> contains a result of at least one `..` or its variations. If it is so, then this already replaced any doubled back apostrophes `` by one `..
+            enclosedBySpecialPairs.lastIndex=0;
+            var hasExtra= false; // Whether there is @<>...<>
+            var extra; // The extra value: result of Javascript from @<>...<>
+            /** @type {boolean} Whether <code>result</code> contains a result of at least one <>...<> or its variations.
              * */
-            var alreadyProcessedDoubledBackApostrophes= false;
+            var alreadyProcessedDoubledSpecialPairs= false;
             var result= '';
-            while( match= enclosedByBackApostrophes.exec(whole) ) {
-                var prefix= originalPreprocessParameter.call( this, match[1].replace( doubledBackApostrophe, '`' ) );
-                // I replace double back apostrophes `` here and not after eval(), because the expression to evaluate may depend on the strings containing single back apostrophe `
-                var expression= match[2].replace( doubledBackApostrophe, '`' );
-                var postfix= originalPreprocessParameter.call( this, match[3].replace( doubledBackApostrophe, '`' ) );
-                var value= this.evalWithExpandedStoredVars( this.replaceVariables(expression) );
-                !prefix.endsWith('=') || SeLiteMisc.fail( "You can only use =`...` with no prefix/postfix, but you've passed parameter value " +whole );
+            while( match= enclosedBySpecialPairs.exec(whole) ) {
+                var prefix= originalPreprocessParameter.call( this, match[1] );
+                var postfix= originalPreprocessParameter.call( this, match[3] );
+                var value= this.evalWithExpandedStoredVars( this.replaceVariables(match[2]) );
+                !prefix.endsWith('=') || SeLiteMisc.fail( "You can only use =<>...<> with no prefix/postfix, but you've passed parameter value " +whole );
                 if( prefix.endsWith('@') ) {
-                    !hasExtra || SeLiteMisc.fail( "Selenese parameter contains multiple occurrences of @`...`, but it should have a maximum one. The parameter value was: " +whole );
+                    !hasExtra || SeLiteMisc.fail( "Selenese parameter contains multiple occurrences of @<>...<>, but it should have a maximum one. The parameter value was: " +whole );
                     hasExtra= true;
                     extra= value;
                     value= '';
@@ -2256,12 +2253,12 @@ var expandStoredVars;
                         prefix= prefix.substring( 0, prefix.length-1 );
                     }
                 }
-                alreadyProcessedDoubledBackApostrophes= true;
+                alreadyProcessedDoubledSpecialPairs= true;
                 result+= prefix+value+postfix;
             }
-            if( !alreadyProcessedDoubledBackApostrophes ) {
-                // There was no `..` neither its alternatives, so I haven't replaced double back apostrophes `` by singles ones `
-                result= originalPreprocessParameter.call( this, whole.replace( doubledBackApostrophe, '`' ) ); // That calls replaceVariables()
+            if( !alreadyProcessedDoubledSpecialPairs ) {
+                // There was no <>...<> (neither its alternatives)
+                result= originalPreprocessParameter.call( this, whole ); // That calls replaceVariables()
             }
             if( hasExtra ) {
                 result= new String(result);
@@ -2273,12 +2270,12 @@ var expandStoredVars;
     
     var originalGetEval= Selenium.prototype.getEval;
     Selenium.prototype.getEval = function getEval(script) {
-        // Parameter script should be a primitive string. If it is an object, it's a result of exactly one expression within `...` (with no prefix & postfix) yeilding an object, or a result of @`...` (with an optional prefix/postfix) as processed by Selenium.prototype.preprocessParameter() as overriden by SelBlocksGlobal. Such parameters should not be used with getEval.
+        // Parameter script should be a primitive string. If it is an object, it is a result of exactly one expression within <>...<> (with no prefix & postfix) yeilding an object, or a result of @<>...<> (with an optional prefix/postfix) as processed by Selenium.prototype.preprocessParameter() as overriden by SelBlocksGlobal. Such parameters should not be used with getEval.
         if( typeof script==='object' ) {
             var msg= "You must call getEval (and its derivatives such as storeEval) with a primitive (non-object) string in Target parameter.";
             msg+= script.seLiteExtra!==undefined
-                ? " Don't use enhanced syntax @`...` for Target."
-                : " However, you've used enhanced syntax =`...` for Target, which resulted in an object of class " +SeLiteMisc.classNameOf(script)+ ". Alternatively, if you'd really like to pass the string value of this object as a parameter to command getEval (or storeEval...), which would then evaluate it as a Javascript expression (again), use `...` instead.";
+                ? " Don't use enhanced syntax @<>...<> for Target."
+                : " However, you've used enhanced syntax =<>...<> for Target, which resulted in an object of class " +SeLiteMisc.classNameOf(script)+ ". Alternatively, if you'd really like to pass the string value of this object as a parameter to command getEval (or storeEval...), which would then evaluate it as a Javascript expression (again), use <>...<> instead.";
             msg+= " See http://selite.github.io/EnhancedSelenese"
             SeLiteMisc.fail( msg );
         }
