@@ -2189,15 +2189,85 @@ var expandStoredVars;
 }(selblocks));
 
 (function() {
+    // Assume single-line string only.
+    // Following offers 80/20 support for ECMAScript 6 Template Literals (http://es6-features.org/#StringInterpolation), which use `...${javascript expression}...`.
+    // It restricts substitution of ${...} in Selenese parameters.  It doesn't substitute those within template literals `...`.
+    // Affected documentation: Selenium IDE > Store Commands and Selenium Variables(http://docs.seleniumhq.org/docs/02_selenium_ide.jsp#store-commands-and-selenium-variables)
+    // No special support for `...\${..}...`. That is not an ES6 Template Literal (because of the backslash). However, Selenese doesn't substitue that ${...} with any stored value.
+    
+    // No need for special support for template literals `...` that include any comments /*...*/ that include back apostrophe `. E.g. `hi ${ /*the following back apostrophe should be ignored`*/ 'man'}` wouldn't match. However, that would be OK, since the inner part of ${...} would consist non-word characters, hence original Selenium.prototype.replaceVariables() wouldn't modify it.
+    // Split a (deemed) Javascript expression by comments.
+    // Skip comments /*...*/ that are outside any string literals
+    // Group meanings:  ((a classic '" or template string ` literal or other char.)   (comment /*..*/      )
+    // Capturing Groups:123 4             5             6                             7    8
+    // Parenthesis lev: 12 3        3    3        3    3        3   34      4     3 2 2    34      4 3     21
+    // Challenge: how to get all matches, rather than just the last.
+    
+    //var commentOrOtherRegex= /^(('([^']|\\')*'|"([^"]|\\")*"|`([^`]|\\`)*`|((?!\/\*)[^'"])+)|(\/\*((?!\*\/).)*\*\/))+$/;
+    
+    // Group meanings:         (not a comment /*...*/ )(not a classic string literal     )
+    // Captured group levels:  
+    // Parenthesis levels:     1      23      3 2     11   2        2  11 
+    var templateLiteralRegex= /(?!\/\*((?!\*\/).)*\*\/)(?!'([^']|\\')*')(?!"([^""]|\\")*')/;
+    
+    var originalReplaceVariables= Selenium.prototype.replaceVariables;
+    Selenium.prototype.replaceVariables = function replaceVariables(str) {
+        var result= '';
+        for( var i=0; i<str.length; i++ ) {
+            var slice= '';
+            
+            while( i<str.length && "'`\"".indexOf(str[i])<0 ) { // Support for strings other than string literals/template literals
+                slice+= str[i];
+                if( str[i]==='/' && i+1<str.length && str[i+1]==='*' ) { // Support for comment /*...*/
+                    slice+= str[++i];
+                    while( ++i<str.length ) {
+                        slice+= str[i];
+                        if( str[i]==='*' && i+1<str.length && str[i+1]==='/' ) {
+                            slice+= str[++i];
+                            break;
+                        }
+                    }
+                }
+                i++; // It may become str.length or str.length+1, but that doesn't matter
+            }
+            result+= originalReplaceVariables.call( null, slice );
+            
+            slice= '';
+            if( i<str.length && "'`\"".indexOf(str[i])>=0 ) { // Support for string literals/template literals
+                var delimiter= str[i];
+                slice+= delimiter;
+                while( ++i<str.length ) {
+                    slice+= str[i];
+                    if( str[i]==='\\' ) { // append the character after \
+                        if( ++i<str.length ) {
+                            slice+= str[i];
+                        }
+                        continue;
+                    }
+                    if( str[i]===delimiter ) {
+                        break;
+                    }
+                }
+                result+= delimiter!=="`"
+                    ? originalReplaceVariables.call( null, slice )
+                    : slice;
+            }
+        }
+        return result;
+    };    
+    
     var originalPreprocessParameter= Selenium.prototype.preprocessParameter;
-    // This sets a head intercept of chrome/content/selenium-core/scripts/selenium-api.js. See http://selite.github.io/EnhancedSelenese.
-    var enclosedByEqualsSpecialPairs= /^=<>(((?!<>).)*)<>$/g; // For handling =<>...<>
+    // For handling =<>...<>
+    var enclosedByEqualsSpecialPairs= /^=<>(((?!<>).)*)<>$/g;
+    
     // This adds support for javascript expressions enclosed with <>...<>, \<>...<> or @<>...<>
     // as documented at http://selite.github.io/EnhancedSelenese.
     // If the user wants to actually pass a string '<>' to the result, she or he has to work around this (e.g. by generating it in a Javascript expression).
     // The 3rd captured group - the postfix - is guaranteed not to end with # or @  that would be just before the next occurrence of <>...<> (if any)
     // Levels of regex. parenthesis 12  3    3 2 1  12  3    3 2 1  12  3    3          3    32 1
     var enclosedBySpecialPairs= /((?:(?!<>).)*)<>((?:(?!<>).)+)<>((?:(?!<>)[^#@]|[#@](?!<>))*)/g;
+    
+    // This sets a head intercept of chrome/content/selenium-core/scripts/selenium-api.js. See http://selite.github.io/EnhancedSelenese.
     Selenium.prototype.preprocessParameter = function selBlocksGlobalPreprocessParameter(whole) {
         // javascript{..} doesn't replace ${variableName}.
         // Selenese ${variableName} requires {}, which is good because it separates it from the rest of the target/value,
@@ -2236,8 +2306,8 @@ var expandStoredVars;
             var alreadyProcessedDoubledSpecialPairs= false;
             var result= '';
             while( match= enclosedBySpecialPairs.exec(whole) ) {
-                var prefix= originalPreprocessParameter.call( this, match[1] );
-                var postfix= originalPreprocessParameter.call( this, match[3] );
+                var prefix= originalPreprocessParameter.call( this, match[1] ); // That calls Selenium.prototype.replaceVariables()
+                var postfix= originalPreprocessParameter.call( this, match[3] ); // That calls Selenium.prototype.replaceVariables()
                 var value= this.evalWithExpandedStoredVars( this.replaceVariables(match[2]) );
                 !prefix.endsWith('=') || SeLiteMisc.fail( "You can only use =<>...<> with no prefix/postfix, but you've passed parameter value " +whole );
                 if( prefix.endsWith('@') ) {
@@ -2258,7 +2328,7 @@ var expandStoredVars;
             }
             if( !alreadyProcessedDoubledSpecialPairs ) {
                 // There was no <>...<> (neither its alternatives)
-                result= originalPreprocessParameter.call( this, whole ); // That calls replaceVariables()
+                result= originalPreprocessParameter.call( this, whole ); // That calls Selenium.prototype.replaceVariables()
             }
             if( hasExtra ) {
                 result= new String(result);
