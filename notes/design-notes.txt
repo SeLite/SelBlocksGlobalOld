@@ -35,7 +35,6 @@ Name Space and Major Functions
     .LOG
     .unwrapObject()
     .InfixExpressionParser()
-    .handleAsTryBlock()
     .handleAsExitTest()
     .tcf
       .nestingLevel
