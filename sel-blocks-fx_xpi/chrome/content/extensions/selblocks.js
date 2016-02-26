@@ -457,22 +457,22 @@ var expandStoredVars;
   // Other differences to SelBlocks: no support for onServer; no return value.
   var nextCommand= function nextCommand() {
     if( testCase.startPointFromJavascript ) {
+        assert( branchIdx===null, "branchIdx should be null when invoking Selenese from Javascript, but it's: " +branchIdx );
         this.started = true;
-        selenium.doCall( testCase.startPointFromJavascript, ''/*todo..*/, /*invokedFromJavascript*/true, undefined, undefined/*todo*/, true );
+        selenium.doCall( testCase.startPointFromJavascript, ''/*todo: pass seleneseParameters from invokeFromJavascript() via selenium object; then delete it on the following line*/, /*invokedFromJavascript*/true, undefined, undefined/*todo*/, true );
         delete testCase['startPointFromJavascript'];
     }
     LOG.debug( 'SelBlocks head-intercept of TestCaseDebugContext.nextCommand()');
     if (!this.started) {
       this.started = true;
         // The following is as from SelBlocks, but -1, because the original nextCommand() increases it (after this head intercept).
-      this.debugIndex = testCase.startPoint || testCase.startPointFromJavascript
+      this.debugIndex = testCase.startPointFromJavascript || testCase.startPoint
            ? testCase.commands.indexOf(
-               testCase.startPoint
-                    ? testCase.startPoint
-                    : testCase.startPointFromJavascript
+               testCase.startPointFromJavascript
+                    ? testCase.startPointFromJavascript
+                    : testCase.startPoint
              )-1
            : -1;
-      delete testCase[ 'startPointFromJavascript' ];
     }
     else {
       // SelBlocksGlobal hook for SeLite Bootstrap. @TODO This shouldn't be here, but in testcase-debug-context. However, that would currently be a pain in the neck due to https://github.com/SeleniumHQ/selenium/issues/1537 and https://github.com/SeleniumHQ/selenium/issues/1549 (listed in ThirdPartyIssues.md).
@@ -488,12 +488,6 @@ var expandStoredVars;
         testCase= this.testCase= localCase(branchIdx);
         testCase.debugContext= this;
         branchIdx = null;
-      }
-      // Do not increase debugIndex in an else {} branch here, because the original nextCommand() does it (after this head intercept).
-      if( testCase.startPointFromJavascript ) {
-          this.debugIndex= testCase.startPointFromJavascript-1; // -1, because the original nextCommand() increases it (after this head intercept).
-          delete testCase[ 'startPointFromJavascript' ];
-          // @TODO instead of startPointFromJavascript, consider setting branchIdx; then I don't do -1. However, I'll still need startPointFromJavascript for the positive branch of if (!this.started) {...}
       }
     }
     //SelBlocksGlobal: No need to skip comments. No return value.
