@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://change-this-to-the-site-you-are-testing/" />
+<title>New Test</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">New Test</td></tr>
+</thead><tbody>
+<tr>
+	<td>function</td>
+	<td>func</td>
+	<td>shouldFail</td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
+	<td>if( storedVars.shouldFail ) throw new Error(storedVars.shouldFail);</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
+	<td>alert( &quot;from Selenese function&quot; )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<!-- --- -->
+<tr>
+	<td>getEval</td>
+	<td>selenium.doCall( 'func', '', true )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>getEval</td>
+	<td>alert( &quot;from Selenese eval()&quot; )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>getEval</td>
+	<td>selenium.doCall( 'func', '', true )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>getEval</td>
+	<td>alert( &quot;from Selenese eval() again&quot; )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>try</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
+	<td>selenium.doCall( 'func', 'shouldFail=&quot;first failure&quot;', true )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>catch</td>
+	<td>first failure</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endTry</td>
+	<td></td>
+	<td></td>
+</tr>
+<!-- --- -->
+<tr>
+	<td>getEval</td>
+	<td>setTimeout( ()=&gt;{selenium.invokeFromJavascript( 'func', 'shouldFail=true', ()=&gt;alert('success from JS'), ()=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>
