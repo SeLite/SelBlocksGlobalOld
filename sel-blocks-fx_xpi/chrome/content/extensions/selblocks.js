@@ -2372,9 +2372,9 @@ debugger;
         numberOfSpecialPairs%2===0 || SeLiteMisc.fail( "SeLite SelBlocks Global and its http://selite.github.io/EnhancedSelenese doesn't allow Selenese parameters to contain an odd number of character pairs <>. The parameter value was: " +whole );
         // Match <>...<>, \<>...<>, =<>...<> and @<>...<>. Replace $xx parts with respective stored variables. Evaluate. If it was \<>...<>, then escape it as an XPath string. If it was @<>...<>, then make the rest a String object (rather than a string primitive) and store thesult of Javascript in field seLiteExtra on that String object.
         // I don't replace through a callback function - e.g. whole.replace( enclosedBySpecialPairs, function replacer(match, field) {..} ) - because that would always cast the replacement result as string.
-        var match;
         enclosedByEqualsSpecialPairs.lastIndex= 0;
-        if( match=enclosedByEqualsSpecialPairs.exec(whole) ) {
+        var match= enclosedByEqualsSpecialPairs.exec(whole);
+        if( match ) {
            return this.evalWithExpandedStoredVars( this.replaceVariables(match[1]) ); // evalWithExpandedStoredVars() calls expandStoredVars()
         }
         else {
@@ -2384,8 +2384,9 @@ debugger;
             /** @type {boolean} Whether <code>result</code> contains a result of at least one <>...<> or its variations.
              * */
             var alreadyProcessedDoubledSpecialPairs= false;
+            match= enclosedBySpecialPairs.exec(whole);
             var result= '';
-            while( match= enclosedBySpecialPairs.exec(whole) ) {
+            while( match ) {
                 var prefix= originalPreprocessParameter.call( this, match[1] ); // That calls Selenium.prototype.replaceVariables()
                 var postfix= originalPreprocessParameter.call( this, match[3] ); // That calls Selenium.prototype.replaceVariables()
                 var value= this.evalWithExpandedStoredVars( this.replaceVariables(match[2]) );
