@@ -2384,9 +2384,8 @@ debugger;
             /** @type {boolean} Whether <code>result</code> contains a result of at least one <>...<> or its variations.
              * */
             var alreadyProcessedDoubledSpecialPairs= false;
-            match= enclosedBySpecialPairs.exec(whole);
             var result= '';
-            while( match ) {
+            for(match= enclosedBySpecialPairs.exec(whole); match; match= enclosedBySpecialPairs.exec(whole) ) {
                 var prefix= originalPreprocessParameter.call( this, match[1] ); // That calls Selenium.prototype.replaceVariables()
                 var postfix= originalPreprocessParameter.call( this, match[3] ); // That calls Selenium.prototype.replaceVariables()
                 var value= this.evalWithExpandedStoredVars( this.replaceVariables(match[2]) );
