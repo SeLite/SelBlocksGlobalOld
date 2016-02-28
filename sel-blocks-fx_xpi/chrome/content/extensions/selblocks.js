@@ -456,22 +456,19 @@ var expandStoredVars;
   // And we intercept do it on the prototype, so that it applies to any test cases.
   // Other differences to SelBlocks: no support for onServer; no return value.
   var nextCommand= function nextCommand() {
-    if( testCase.startPointFromJavascript ) {
+    if( testCase.seleneseFunctionNameCalledFromJavascript ) {
+        assert( !this.started, "When using seleneseFunctionNameCalledFromJavascript, the test case must not have started yet." );
         assert( branchIdx===null, "branchIdx should be null when invoking Selenese from Javascript, but it's: " +branchIdx );
         this.started = true;
-        selenium.doCall( testCase.startPointFromJavascript, ''/*todo: pass seleneseParameters from invokeFromJavascript() via selenium object; then delete it on the following line*/, /*invokedFromJavascript*/true, undefined, undefined/*todo*/, true );
-        delete testCase['startPointFromJavascript'];
+        selenium.doCall( testCase.seleneseFunctionNameCalledFromJavascript, ''/*todo: pass seleneseParameters from invokeFromJavascript() via selenium object; then delete it on the following line*/, /*invokedFromJavascript*/true, undefined, undefined/*todo*/, true );
+        delete testCase['seleneseFunctionNameCalledFromJavascript'];
     }
     LOG.debug( 'SelBlocks head-intercept of TestCaseDebugContext.nextCommand()');
     if (!this.started) {
       this.started = true;
         // The following is as from SelBlocks, but -1, because the original nextCommand() increases it (after this head intercept).
-      this.debugIndex = testCase.startPointFromJavascript || testCase.startPoint
-           ? testCase.commands.indexOf(
-               testCase.startPointFromJavascript
-                    ? testCase.startPointFromJavascript
-                    : testCase.startPoint
-             )-1
+      this.debugIndex = testCase.startPoint
+           ? testCase.commands.indexOf(testCase.startPoint)-1
            : -1;
     }
     else {
@@ -1668,7 +1665,9 @@ debugger;
           funcIdx: funcIdx,
           name: funcName,
           args: args,
-          returnIdx: !isStartPointFromJavascript ? idxHere() : undefined,
+          returnIdx: !isStartPointFromJavascript
+            ? idxHere()
+            : undefined,
           savedVars: savedVars,
           blockStack: new Stack(),
           testCase: testCase,
@@ -1695,81 +1694,13 @@ debugger;
   Selenium.prototype.invokeFromJavascript= function invokeFromJavascript( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
-    testCase.startPointFromJavascript= seleneseFunctionName; //localIdx(funcIdx); // needed
+    // @TODO: Why not funcIdx::?
+    testCase.seleneseFunctionNameCalledFromJavascript= seleneseFunctionName;
     
     // Roughly following effects of Editor.prototype.playCurrentTestCase():
     debugger;
     editor.suiteTreeView.currentTestCase==testCase || editor.suiteTreeView.testCaseChanged( testCase );
     editor.playCurrentTestCase();
-    return;
-    
-    // Based on execution flow of Selenium IDE
-    // Based on Debugger.prototype.start( complete, /*useLastWindow*/false )
-    editor.toggleRecordingEnabled(false);
-    editor.selDebugger.init();
-    editor.selDebugger.setState(Debugger.PLAYING);
-    
-    // Based on start() in selenium-runner.js
-    resetCurrentTest();
-    selenium = createSelenium( editor.getBaseURL(), /*useLastWindow*/false);
-    selenium.browserbot.selectWindow(null);
-    
-    commandFactory = new CommandHandlerFactory();
-    commandFactory.registerAll(selenium);
-
-    currentTest = new IDETestLoop( commandFactory, 
-    () => {
-        if( testCase.testResult.summary==='failed' ) {
-            editor.selDebugger.setState(Debugger.STOPPED);
-            //editor.selDebugger.log.error();
-            !onFailure || onFailure();
-        }
-        else {
-            !onSuccess || onSuccess();
-        }
-    }    
-    );
-
-    currentTest.getCommandInterval = function() {
-      return getInterval();
-    };
-    testCase.debugContext.reset();
-    
-    // Based on start() in selenium-runner.js:
-    selenium.reset();
-    selenium.doSetTimeout(editor.app.getOptions().timeout);
-    
-    // Based on TestLoop.prototype.continueTest() in selenium-executionloop.js - as if executing currentTest.continueTest():
-    currentTest.currentCommand = currentTest.nextCommand();
-    /*if (! currentTest.requiresCallBack) {
-            currentTest.continueTestAtCurrentCommand();
-        }*/
-    
-    // Roughly following effects of Editor.prototype.playCurrentTestCase():
-    debugger;
-    editor.suiteTreeView.currentTestCase==testCase || editor.suiteTreeView.testCaseChanged( testCase );
-    //editor.suiteTreeView.currentTestCase= testCase;
-    //editor.suiteTreeView.currentTestCaseIndex= testCases.indexOf( testCase );
-    
-    //testCase.debugContext.nextCommand();
-    
-    this.doCall( seleneseFunctionName, seleneseParameters, true, onSuccess, onFailure ); 
-    return;
-    
-    // @TODO trigger doCall() directly
-    editor.playCurrentTestCase( () => {
-        if( testCase.testResult.summary==='failed' ) {
-            editor.selDebugger.setState(Debugger.STOPPED);
-            //editor.selDebugger.log.error();
-            !onFailure || onFailure();
-        }
-        else {
-            !onSuccess || onSuccess();
-        }
-    }, 0, 1 );
-    
-    //editor.playTestSuite();
-    this.doCall( seleneseFunctionName, seleneseParameters, true, onSuccess, onFailure );
   };
   
   Selenium.prototype.doFunction = function doFunction(funcName)
@@ -1795,7 +1726,6 @@ debugger;
   Selenium.prototype.doEndScript = function doEndScript(scrName) {
     this.returnFromFunction(scrName);
   };
-  Selenium.prototype.breakPoint= function() { debugger; }
 
   Selenium.prototype.returnFromFunction= function returnFromFunction(funcName, returnVal)
   {debugger;
