@@ -74,8 +74,23 @@
 </tr>
 <!-- --- -->
 <tr>
-	<td>getEval</td>
+	<td>&nbsp;&nbsp;getEval</td>
 	<td>setTimeout( ()=&gt;{selenium.invokeFromJavascript( 'func', 'shouldFail=true', ()=&gt;alert('success from JS'), ()=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>if</td>
+	<td>false</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
+	<td>setTimeout( ()=&gt;{selenium.invokeFromJavascript( 'func', 'shouldFail=false', ()=&gt;alert('success from JS'), ()=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endIf</td>
+	<td></td>
 	<td></td>
 </tr>
 </tbody></table>

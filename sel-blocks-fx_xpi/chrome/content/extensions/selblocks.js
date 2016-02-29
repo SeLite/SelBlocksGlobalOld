@@ -456,12 +456,13 @@ var expandStoredVars;
   // And we intercept do it on the prototype, so that it applies to any test cases.
   // Other differences to SelBlocks: no support for onServer; no return value.
   var nextCommand= function nextCommand() {
-    if( testCase.seleneseFunctionNameCalledFromJavascript ) {
-        assert( !this.started, "When using seleneseFunctionNameCalledFromJavascript, the test case must not have started yet." );
+    if( testCase.calledFromJavascript ) {
+        assert( !this.started, "When using calledFromJavascript, the test case must not have started yet." );
         assert( branchIdx===null, "branchIdx should be null when invoking Selenese from Javascript, but it's: " +branchIdx );
         this.started = true;
-        selenium.doCall( testCase.seleneseFunctionNameCalledFromJavascript, ''/*todo: pass seleneseParameters from invokeFromJavascript() via selenium object; then delete it on the following line*/, /*invokedFromJavascript*/true, undefined, undefined/*todo*/, true );
-        delete testCase['seleneseFunctionNameCalledFromJavascript'];
+        // The following means that nextCommand() has a big side-effect of actually running doCall().
+        selenium.doCall( testCase.calledFromJavascript.functionName, testCase.calledFromJavascript.seleneseParameters, /*invokedFromJavascript*/true, testCase.calledFromJavascript.onSuccess, testCase.calledFromJavascript.onFailure, /*isStartPointFromJavascript*/true );
+        delete testCase['calledFromJavascript'];
     }
     LOG.debug( 'SelBlocks head-intercept of TestCaseDebugContext.nextCommand()');
     if (!this.started) {
@@ -1694,8 +1695,12 @@ debugger;
   Selenium.prototype.invokeFromJavascript= function invokeFromJavascript( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
-    // @TODO: Why not funcIdx::?
-    testCase.seleneseFunctionNameCalledFromJavascript= seleneseFunctionName;
+    testCase.calledFromJavascript= {
+        functionName: seleneseFunctionName,
+        seleneseParameters,
+        onSuccess,
+        onFailure
+    };
     
     // Roughly following effects of Editor.prototype.playCurrentTestCase():
     debugger;
