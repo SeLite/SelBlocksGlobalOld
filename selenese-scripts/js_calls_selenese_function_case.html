@@ -37,21 +37,39 @@
 	<td>selenium.doCall( 'func', '', true )</td>
 	<td></td>
 </tr>
+<!-- --- -->
 <tr>
-	<td>getEval</td>
+	<td>if</td>
+	<td>false</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
 	<td>alert( &quot;from Selenese eval()&quot; )</td>
 	<td></td>
 </tr>
 <tr>
-	<td>getEval</td>
+	<td>&nbsp;&nbsp;getEval</td>
 	<td>selenium.doCall( 'func', '', true )</td>
 	<td></td>
 </tr>
 <tr>
-	<td>getEval</td>
+	<td>&nbsp;&nbsp;getEval</td>
 	<td>alert( &quot;from Selenese eval() again&quot; )</td>
 	<td></td>
 </tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
+	<td>selenium.doCall( 'func', 'shouldFail=&quot;first failure - unprotected&quot;', true )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endIf</td>
+	<td></td>
+	<td></td>
+</tr>
+<!-- --- -->
+<!-- --- -->
 <tr>
 	<td>try</td>
 	<td></td>
@@ -63,8 +81,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>&nbsp;&nbsp;getEval</td>
+	<td>alert( 'passed first failure' )</td>
+	<td></td>
+</tr>
+<tr>
 	<td>catch</td>
 	<td>first failure</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
+	<td>alert( 'caught first failure' )</td>
 	<td></td>
 </tr>
 <tr>
@@ -75,7 +103,7 @@
 <!-- --- -->
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
-	<td>setTimeout( ()=&gt;{selenium.invokeFromJavascript( 'func', 'shouldFail=true', ()=&gt;alert('success from JS'), ()=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td>setTimeout( ()=&gt;{selenium.invokeFromJavascript( 'func', 'shouldFail=true' ); }, 2600 )</td>
 	<td></td>
 </tr>
 <tr>
@@ -85,7 +113,12 @@
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
-	<td>setTimeout( ()=&gt;{selenium.invokeFromJavascript( 'func', 'shouldFail=false', ()=&gt;alert('success from JS'), ()=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td>setTimeout( ()=&gt;{selenium.invokeFromJavascript( 'func', 'shouldFail=true', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
+	<td>setTimeout( ()=&gt;{selenium.invokeFromJavascript( 'func', 'shouldFail=false', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
 	<td></td>
 </tr>
 <tr>

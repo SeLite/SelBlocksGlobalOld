@@ -26,9 +26,19 @@
         var message= originalMessage!=='false'
             ? '. The message: ' +originalMessage
             : '';
-        LOG.info( 'try..catch..endTry caught an exception or assert failure from command: ' + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |" +message );   
+        LOG.info( 'try..catch..endTry caught an exception or assert failure from command: ' + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |" +message );
         this.continueTest();
-      } else {
+      }
+      else if( selenium.callStack().top().callFromAsync ) {
+        debugger;
+        LOG.warn( 'testLoopResumeHandleError: callFromAsync, popping callStack');
+        !selenium.callStack().top().onFailure || selenium.callStack().top().onFailure( e );
+        LOG.warn( 'testLoopResumeHandleError: callFromAsync, after calling onFailure (if any)');
+        selenium.callStack().pop();
+        //selenium.returnFromFunction(); //NO - or only use a part
+        this.continueTest();
+      }
+      else {
         this._handleCommandError(e); // causes command to be marked in red
         this.testComplete();
       }
