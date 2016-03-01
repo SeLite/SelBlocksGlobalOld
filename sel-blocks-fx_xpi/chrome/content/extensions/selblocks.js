@@ -472,15 +472,15 @@ var expandStoredVars;
   // And we intercept do it on the prototype, so that it applies to any test cases.
   // Other differences to SelBlocks: no support for onServer; no return value.
   var nextCommand= function nextCommand() {
-    if( testCase.calledFromJavascript ) {
-        LOG.warn( 'nextCommand: calledFromJavascript' );
-        assert( !this.started, "When using calledFromJavascript, the test case must not have started yet." );
+    if( testCase.callFromAsync ) {
+        LOG.warn( 'nextCommand: callFromAsync' );
+        assert( !this.started, "When using callFromAsync, the test case must not have started yet." );
         this.started = true;
         assert( branchIdx===null, "branchIdx should be null when invoking Selenese from Javascript, but it's: " +branchIdx );
         // The following means that nextCommand() has a big side-effect of actually running doCall().
         LOG.warn( 'nextCommand() invoking doCall()');
-        selenium.doCall( testCase.calledFromJavascript.functionName, testCase.calledFromJavascript.seleneseParameters, /*callFromAsync*/true, testCase.calledFromJavascript.onSuccess, testCase.calledFromJavascript.onFailure, /*isStartPointFromJavascript*/true );
-        delete testCase['calledFromJavascript'];
+        selenium.doCall( testCase.callFromAsync.functionName, testCase.callFromAsync.seleneseParameters, /*invokedFromJavascript*/true, testCase.callFromAsync.onSuccess, testCase.callFromAsync.onFailure, /*callFromAsync*/true );
+        delete testCase['callFromAsync'];
     }
     LOG.debug( 'SelBlocks head-intercept of TestCaseDebugContext.nextCommand()');
     if (!this.started) {
@@ -1125,8 +1125,8 @@ var expandStoredVars;
     var tryState = bubbleToTryBlock(Stack.isTryBlock);
     var tryDef = blkDefFor(tryState);
     if( tryState ) {
-        if( tryState.callFromAsync ) {
-            LOG.warn( 'handleCommandError: callFromAsync');
+        if( tryState.invokedFromJavascript ) {
+            LOG.warn( 'handleCommandError: invokedFromJavascript');
             $$.tcf.bubbling = null;
             return true;
         }
@@ -1182,7 +1182,7 @@ var expandStoredVars;
     };
     
     var tryState = bubbleToTryBlock(isTryWithMatchingOrFinally);
-    if( tryState.callFromAsync ) {
+    if( tryState.invokedFromJavascript ) {
         LOG.warn('bubbleCommand');
         $$.tcf.bubbling = null; // Maybe not needed
         return;
@@ -1235,24 +1235,24 @@ var expandStoredVars;
       $$.LOG.warn("bubbleToTryBlock() called outside of any try nesting");
     }
     var callFrame = callStack.top();
-    if( callFrame.callFromAsync ) {
-        LOG.warn('bubbleToTryBlock: level 0 callFromAsync. popping callStack');
+    if( callFrame.invokedFromJavascript ) {
+        LOG.warn('bubbleToTryBlock: level 0 invokedFromJavascript. popping callStack');
         !callFrame.onFailure || callFrame.onFailure();
         debugger;callFrame = callStack.pop();
         restoreCallFrame( callFrame ); // maybe not needed
-        return {callFromAsync: true};
+        return {invokedFromJavascript: true};
     }
     var tryState = unwindToBlock(_hasCriteria);
     while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
       LOG.warn( 'bubbleToTryBlock: popping callStack from within while() loop.');
       debugger;callFrame = callStack.pop();
       restoreCallFrame( callFrame );
-      if( callFrame.callFromAsync ) {
-          LOG.warn('bubbleToTryBlock: deeper level callFromAsync. popping callStack');
+      if( callFrame.invokedFromJavascript ) {
+          LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
           !callFrame.onFailure || callFrame.onFailure();
           callFrame = callStack.pop();
           restoreCallFrame( callFrame ); // maybe not needed
-          return {callFromAsync: true};
+          return {invokedFromJavascript: true};
       }
       $$.LOG.info("function '" + callFrame.name + "' aborting due to error");
       tryState = unwindToBlock(_hasCriteria);
@@ -1646,11 +1646,11 @@ var expandStoredVars;
    * Both onSuccess or onFailure will be called on success or failure, respectively. They are invoked asynchronously, *after* returning back to Javascript caller (non-Selenese layer that invoked this Selenese).
    * @param {string} funcName
    * @param {string} argSpec Comma-separated assignments of Selenese parameters. See reference.xml.
-   * @param {boolean} [callFromAsync=false] Whether invoked from Javascript (rather than directly from Selenese)
-   * @param {function} [onSuccess] Callback function. Only used if callFromAsync==true.
-   * @param {function} [onFailure] Callback function. Only used if callFromAsync==true.
+   * @param {boolean} [invokedFromJavascript=false] Whether invoked from Javascript (rather than directly from Selenese)
+   * @param {function} [onSuccess] Callback function. Only used if invokedFromJavascript==true.
+   * @param {function} [onFailure] Callback function. Only used if invokedFromJavascript==true.
    * */
-  Selenium.prototype.doCall = function doCall(funcName, argSpec, callFromAsync=false, onSuccess, onFailure, isStartPointFromJavascript=false )
+  Selenium.prototype.doCall = function doCall(funcName, argSpec, invokedFromJavascript=false, onSuccess, onFailure, callFromAsync=false )
   {
     var loop = currentTest || htmlTestRunner.currentTest; // See Selenium.prototype.doRollup()
     assertRunning(); // TBD: can we do single execution, ie, run from this point then break on return?
@@ -1662,7 +1662,7 @@ var expandStoredVars;
     
     var activeCallFrame = callStack.top();
     if (activeCallFrame.isReturning && activeCallFrame.returnIdx === idxHere()) {
-      assert( !callFromAsync, "Should have callFromAsync undefined/false." );
+      assert( !invokedFromJavascript, "Should have invokedFromJavascript undefined/false." );
       LOG.warn( 'doCall: isReturning: popping call Stack');
       // returning from completed function
       debugger;var popped= callStack.pop();
@@ -1673,7 +1673,7 @@ var expandStoredVars;
       assert( testCase===popped.testCase, "The popped testCase is different." ); // Not sure why, but this seems to be true.
     }
     else {
-        LOG.warn('doCall callFromAsync: ' +callFromAsync);
+        LOG.warn('doCall invokedFromJavascript: ' +invokedFromJavascript);
       // Support $stored-variablename, just like string{} and getQs, storeQs...
       argSpec= expandStoredVars(argSpec);
       // save existing variable state and set args as local variables
@@ -1694,21 +1694,21 @@ var expandStoredVars;
           funcIdx,
           name: funcName,
           args,
-          returnIdx: !isStartPointFromJavascript
+          returnIdx: !callFromAsync
             ? idxHere()
             : undefined,
           savedVars,
           blockStack: new Stack(),
           testCase,
           originalCommandError,
-          /* Following are only used when callFromAsync is true.
-           * If callFromAsync is true, after we finish/return/throw/bubble from the function body, we don't set next Selenese command, because
+          /* Following are only used when invokedFromJavascript is true.
+           * If invokedFromJavascript is true, after we finish/return/throw/bubble from the function body, we don't set next Selenese command, because
            * - if this doCall() was invoked from Javascript (with no Selenese on the call stack, e.g. from GUI via a callback closure method), then we don't set the next command, since we're returning back to Javascript layer.
            * - if this doCall() was invoked from getEval(), then Selenium sets the next command to be the one after that getEval()
            * - do not invoke doCall() from javascript{...} or from EnhancedSyntax <>...<>
            */
+          invokedFromJavascript,
           callFromAsync,
-          isStartPointFromJavascript,
           onSuccess,
           onFailure,
           //branchIdx: branchIdx,
@@ -1720,11 +1720,11 @@ var expandStoredVars;
     }
   };
   
-  Selenium.prototype.invokeFromJavascript= function invokeFromJavascript( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
+  Selenium.prototype.callFromAsync= function callFromAsync( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
     LOG.warn('invokeFromJavascript()');
-    testCase.calledFromJavascript= {
+    testCase.callFromAsync= {
         functionName: seleneseFunctionName,
         seleneseParameters,
         onSuccess,
@@ -1780,19 +1780,19 @@ var expandStoredVars;
       activeCallFrame.isReturning = true;
       
       // jump back to call command
-      if( !activeCallFrame.callFromAsync ) { // See a comment in doCall()
+      if( !activeCallFrame.invokedFromJavascript ) { // See a comment in doCall()
         setNextCommand(activeCallFrame.returnIdx);
         // Don't callStack.pop() here - doCall() does it instead (in its second run)
       }
       else {
-          LOG.warn('returnFromFunction: callFromAsync; isStartPointFromJavascript: ' +activeCallFrame.isStartPointFromJavascript);
+          LOG.warn('returnFromFunction: invokedFromJavascript; callFromAsync: ' +activeCallFrame.callFromAsync);
           //setNextCommand( activeCallFrame.branchIdx ); This failed when branchIdx wasn't set yet
-          // When using callFromAsync, then the flow control doesn't go to a separate invoker 'call' Selenese command,
+          // When using invokedFromJavascript, then the flow control doesn't go to a separate invoker 'call' Selenese command,
           // since there wasn't any. Hence we handle the stack here.
           testCase= activeCallFrame.testCase;
           testCase.debugContext.debugIndex= activeCallFrame.debugIndex;
           //setNextCommand( activeCallFrame.returnIdx );
-          //if( !activeCallFrame.isStartPointFromJavascript ) {
+          //if( !activeCallFrame.callFromAsync ) {
               setNextCommand( shiftGlobIdx(1, activeCallFrame.returnIdx) );
           //} 
           debugger;
@@ -1800,7 +1800,7 @@ var expandStoredVars;
             var previousCallFrame= callStack.pop();
             //previousCallFrame.isReturning= true; //?
           //fails: restoreCallFrame( callStack.top() );
-          if( activeCallFrame.isStartPointFromJavascript ) {
+          if( activeCallFrame.callFromAsync ) {
             
             editor.selDebugger.runner.currentTest.commandComplete= () => {}; //@TODO onSuccess??
             $$.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", $$.handleAsExitTest);

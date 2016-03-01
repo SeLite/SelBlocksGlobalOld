@@ -29,11 +29,11 @@
         LOG.info( 'try..catch..endTry caught an exception or assert failure from command: ' + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |" +message );
         this.continueTest();
       }
-      else if( selenium.callStack().top().callFromAsync ) {
+      else if( selenium.callStack().top().invokedFromJavascript ) {
         debugger;
-        LOG.warn( 'testLoopResumeHandleError: callFromAsync, popping callStack');
+        LOG.warn( 'testLoopResumeHandleError: invokedFromJavascript, popping callStack');
         !selenium.callStack().top().onFailure || selenium.callStack().top().onFailure( e );
-        LOG.warn( 'testLoopResumeHandleError: callFromAsync, after calling onFailure (if any)');
+        LOG.warn( 'testLoopResumeHandleError: invokedFromJavascript, after calling onFailure (if any)');
         selenium.callStack().pop();
         //selenium.returnFromFunction(); //NO - or only use a part
         this.continueTest();
