@@ -74,14 +74,34 @@
 </tr>
 <!-- --- -->
 <tr>
-	<td>call</td>
+	<td>if</td>
+	<td>false</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;call</td>
 	<td>funcThatDoesntThrow</td>
 	<td>shouldFail=true</td>
 </tr>
+<tr>
+	<td>endIf</td>
+	<td></td>
+	<td></td>
+</tr>
 <!-- --- -->
 <tr>
-	<td>getEval</td>
+	<td>if</td>
+	<td>false</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
 	<td>selenium.doCall( 'func', '', true )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endIf</td>
+	<td></td>
 	<td></td>
 </tr>
 <!-- --- -->
@@ -124,32 +144,48 @@
 <!-- --- -->
 <!-- --- -->
 <tr>
-	<td>try</td>
+	<td>if</td>
+	<td>true</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;try</td>
 	<td></td>
 	<td></td>
 </tr>
 <tr>
-	<td>&nbsp;&nbsp;getEval</td>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
 	<td>selenium.doCall( 'func', 'shouldFail=&quot;first failure&quot;', true )</td>
 	<td></td>
 </tr>
 <tr>
-	<td>&nbsp;&nbsp;getEval</td>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
 	<td>alert( 'passed first failure' )</td>
 	<td></td>
 </tr>
 <tr>
-	<td>catch</td>
+	<td>&nbsp;&nbsp;catch</td>
 	<td>first failure</td>
 	<td></td>
 </tr>
 <tr>
-	<td>&nbsp;&nbsp;getEval</td>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
 	<td>alert( 'caught first failure' )</td>
 	<td></td>
 </tr>
 <tr>
-	<td>endTry</td>
+	<td>&nbsp;&nbsp;endTry</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>endIf</td>
+	<td></td>
+	<td></td>
+</tr>
+<!-- --- -->
+<tr>
+	<td>exitTest</td>
 	<td></td>
 	<td></td>
 </tr>

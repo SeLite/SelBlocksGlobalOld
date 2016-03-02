@@ -1126,11 +1126,6 @@ var expandStoredVars;
     var tryState = bubbleToTryBlock(Stack.isTryBlock);
     var tryDef = blkDefFor(tryState);
     if( tryState ) {
-        if( tryState.invokedFromJavascript ) {
-            LOG.warn( 'handleCommandError: invokedFromJavascript');
-            $$.tcf.bubbling = null;
-            return true;
-        }
         $$.LOG.debug("error encountered while: " + tryState.execPhase);
         if (hasUnspentCatch(tryState)) {
           if (this.isMatchingCatch(err, tryDef.catchIdx)) {
@@ -1143,6 +1138,11 @@ var expandStoredVars;
             setNextCommand(tryDef.catchIdx);
             return true;
           }
+        }
+        if( tryState./*invokedFromJavascript*/callFromAsync ) {
+            LOG.warn( 'handleCommandError: invokedFromJavascript, callFromAsync: ' +tryState.callFromAsync );
+            $$.tcf.bubbling = null;
+            return !tryState.callFromAsync;
         }
     }
     // error not caught .. instigate bubbling
@@ -1237,28 +1237,28 @@ var expandStoredVars;
     }
     var callFrame = callStack.top();
     var tryState = unwindToBlock(_hasCriteria);
-    if( !tryState && callFrame.invokedFromJavascript ) {
+    if( !tryState && callFrame.invokedFromJavascript /*&& callFrame.callFromAsync*/ ) {
         LOG.warn('bubbleToTryBlock: level 0 invokedFromJavascript. popping callStack');
-        !callFrame.callFromAsync || !callFrame.onFailure || callFrame.onFailure();
+        
         debugger;
-        callFrame = callStack.pop();
-        restoreCallFrame( callFrame ); // maybe not needed
-        return {invokedFromJavascript: true};
+        var previousCallFrame = callStack.pop(); // Minor TODO simplify: remove variable previousCallFrame, since it's the same as callFrame, since it came from top(). Keep callStack.pop().
+        callFrame.callFromAsync || restoreCallFrame( previousCallFrame ); // maybe not needed
+        return {invokedFromJavascript: true, callFromAsync: callFrame.callFromAsync};
     }
     while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
       LOG.warn( 'bubbleToTryBlock: popping callStack from within while() loop.');
       debugger;
       callFrame = callStack.pop();
       restoreCallFrame( callFrame );
-      if( callFrame.invokedFromJavascript ) {
-          LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
-          !callFrame.callFromAsync || !callFrame.onFailure || callFrame.onFailure();
-          callFrame = callStack.pop();
-          restoreCallFrame( callFrame ); // maybe not needed
-          return {invokedFromJavascript: true};
-      }
       $$.LOG.info("function '" + callFrame.name + "' aborting due to error");
       tryState = unwindToBlock(_hasCriteria);
+      if( !tryState && callFrame.invokedFromJavascript /*&& callFrame.callFromAsync*/ ) {
+          LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
+          
+          var previousCallFrame= callStack.pop();
+          callFrame.callFromAsync || restoreCallFrame( previousCallFrame ); // maybe not needed
+          return {invokedFromJavascript: true, callFromAsync: callFrame.callFromAsync};
+      }
     }
     return tryState;
   };
@@ -1341,10 +1341,10 @@ var expandStoredVars;
   };
 
   var hasUnspentCatch= function hasUnspentCatch(tryState) {
-    return (tryState && blkDefFor(tryState).catchIdx && !tryState.hasCaught);
+    return (tryState && blkDefFor(tryState) && blkDefFor(tryState).catchIdx && !tryState.hasCaught);
   };
   var hasUnspentFinally= function hasUnspentFinally(tryState) {
-    return (tryState && blkDefFor(tryState).finallyIdx && !tryState.hasFinaled);
+    return (tryState && blkDefFor(tryState) && blkDefFor(tryState).finallyIdx && !tryState.hasFinaled);
   };
 
   var fmtTry= function fmtTry(tryState)
@@ -1803,7 +1803,7 @@ var expandStoredVars;
               setNextCommand( shiftGlobIdx(1, activeCallFrame.returnIdx) );
           //} 
           LOG.warn( 'returnFromFunction: pop callStack');
-            var previousCallFrame= callStack.pop();
+          var previousCallFrame= callStack.pop();
             //previousCallFrame.isReturning= true; //?
           //fails: restoreCallFrame( callStack.top() );
           if( activeCallFrame.callFromAsync ) {
