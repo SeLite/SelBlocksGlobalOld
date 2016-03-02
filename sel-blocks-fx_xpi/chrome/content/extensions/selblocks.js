@@ -1690,6 +1690,7 @@ var expandStoredVars;
           editor.selDebugger.pause();
           originalCommandError.call( this, result ); // I've already restored this.commandError above *before* calling originalCommandError() here, because: if this was a deeper Selenese function call (i.e. a cascade of call -> function..endFunction) then originalCommandError() will restore any previous version of this.commandError, and I don't want to step on its feet here
       };
+      
       LOG.warn( 'doCall: pushing callStack');
       callStack.push( {
           funcIdx,

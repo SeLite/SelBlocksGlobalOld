@@ -23,7 +23,48 @@
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
-	<td>alert( &quot;from Selenese function&quot; )</td>
+	<td>alert( &quot;from Selenese function func&quot; )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<!-- --- -->
+<tr>
+	<td>function</td>
+	<td>funcThatDoesntThrow</td>
+	<td>shouldFail</td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;try</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>debugger; if( storedVars.shouldFail ) throw new Error(storedVars.shouldFail);</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>alert( &quot;from Selenese function funcThatDoesntThrow&quot; )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;catch</td>
+	<td>/.*/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;finally</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;endTry</td>
+	<td></td>
 	<td></td>
 </tr>
 <tr>
@@ -43,6 +84,12 @@
 	<td>false</td>
 	<td></td>
 </tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
+	<td>( ()=&gt;alert('hi') )();</td>
+	<td></td>
+</tr>
+<!-- --- -->
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
 	<td>alert( &quot;from Selenese eval()&quot; )</td>
@@ -103,7 +150,7 @@
 <!-- --- -->
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
-	<td>setTimeout( ()=&gt;{selenium.callFromAsync( 'func', 'shouldFail=true' ); }, 2600 )</td>
+	<td>setTimeout( ()=&gt;{selenium.callFromAsync( 'funcThatDoesntThrow', 'shouldFail=true', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
 	<td></td>
 </tr>
 <tr>
@@ -114,6 +161,11 @@
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
 	<td>setTimeout( ()=&gt;{selenium.callFromAsync( 'func', 'shouldFail=true', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;getEval</td>
+	<td>setTimeout( ()=&gt;{selenium.callFromAsync( 'func', 'shouldFail=true' ); }, 2600 )</td>
 	<td></td>
 </tr>
 <tr>
