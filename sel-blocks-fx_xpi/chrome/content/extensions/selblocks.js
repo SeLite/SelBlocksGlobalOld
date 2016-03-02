@@ -1237,12 +1237,13 @@ var expandStoredVars;
     }
     var callFrame = callStack.top();
     var tryState = unwindToBlock(_hasCriteria);
-    if( !tryState && callFrame.invokedFromJavascript /*&& callFrame.callFromAsync*/ ) {
+    if( !tryState && callFrame./*invokedFromJavascript*/callFromAsync ) {
         LOG.warn('bubbleToTryBlock: level 0 invokedFromJavascript. popping callStack');
         
         debugger;
         var previousCallFrame = callStack.pop(); // Minor TODO simplify: remove variable previousCallFrame, since it's the same as callFrame, since it came from top(). Keep callStack.pop().
         callFrame.callFromAsync || restoreCallFrame( previousCallFrame ); // maybe not needed
+        // @TODO simplify dependant code - because now, in the following callFromAsync is always true
         return {invokedFromJavascript: true, callFromAsync: callFrame.callFromAsync};
     }
     while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
@@ -1252,7 +1253,7 @@ var expandStoredVars;
       restoreCallFrame( callFrame );
       $$.LOG.info("function '" + callFrame.name + "' aborting due to error");
       tryState = unwindToBlock(_hasCriteria);
-      if( !tryState && callFrame.invokedFromJavascript /*&& callFrame.callFromAsync*/ ) {
+      if( !tryState && callFrame./*invokedFromJavascript*/callFromAsync ) {
           LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
           
           var previousCallFrame= callStack.pop();
