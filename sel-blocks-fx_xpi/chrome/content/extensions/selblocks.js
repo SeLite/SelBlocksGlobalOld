@@ -1236,21 +1236,23 @@ var expandStoredVars;
       $$.LOG.warn("bubbleToTryBlock() called outside of any try nesting");
     }
     var callFrame = callStack.top();
-    if( callFrame.invokedFromJavascript ) {
+    var tryState = unwindToBlock(_hasCriteria);
+    if( !tryState && callFrame.invokedFromJavascript ) {
         LOG.warn('bubbleToTryBlock: level 0 invokedFromJavascript. popping callStack');
-        !callFrame.onFailure || callFrame.onFailure();
-        debugger;callFrame = callStack.pop();
+        !callFrame.callFromAsync || !callFrame.onFailure || callFrame.onFailure();
+        debugger;
+        callFrame = callStack.pop();
         restoreCallFrame( callFrame ); // maybe not needed
         return {invokedFromJavascript: true};
     }
-    var tryState = unwindToBlock(_hasCriteria);
     while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
       LOG.warn( 'bubbleToTryBlock: popping callStack from within while() loop.');
-      debugger;callFrame = callStack.pop();
+      debugger;
+      callFrame = callStack.pop();
       restoreCallFrame( callFrame );
       if( callFrame.invokedFromJavascript ) {
           LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
-          !callFrame.onFailure || callFrame.onFailure();
+          !callFrame.callFromAsync || !callFrame.onFailure || callFrame.onFailure();
           callFrame = callStack.pop();
           restoreCallFrame( callFrame ); // maybe not needed
           return {invokedFromJavascript: true};
@@ -1696,9 +1698,12 @@ var expandStoredVars;
           funcIdx,
           name: funcName,
           args,
-          returnIdx: !callFromAsync
+          returnIdx: !invokedFromJavascript
             ? idxHere()
-            : undefined,
+            : (callFromAsync
+                ? undefined
+                : shiftGlobIdx(1)
+              ),
           savedVars,
           blockStack: new Stack(),
           testCase,

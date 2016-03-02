@@ -74,7 +74,7 @@
 </tr>
 <!-- --- -->
 <tr>
-	<td> call</td>
+	<td>call</td>
 	<td>funcThatDoesntThrow</td>
 	<td>shouldFail=true</td>
 </tr>
@@ -173,7 +173,7 @@
 <!-- --- -->
 <tr>
 	<td>if</td>
-	<td>true</td>
+	<td>false</td>
 	<td></td>
 </tr>
 <tr>
@@ -189,12 +189,23 @@
 <!-- --- -->
 <tr>
 	<td>if</td>
-	<td>false</td>
+	<td>true</td>
 	<td></td>
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
 	<td>setTimeout( ()=&gt;{selenium.callFromAsync( 'func', 'shouldFail=true', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endIf</td>
+	<td></td>
+	<td></td>
+</tr>
+<!-- --- -->
+<tr>
+	<td>if</td>
+	<td>false</td>
 	<td></td>
 </tr>
 <tr>
