@@ -2002,8 +2002,8 @@ var expandStoredVars;
   var fmtCmdRef= function fmtCmdRef(idx) {
     var test= localCase(idx);
     var commandIdx= localIdx(idx);
-
-    return "@" +test.filename+ ': ' +(commandIdx+1) + ": [" + $$.fmtCmd( test.commands[commandIdx]+ "]" );
+    //@TODO suggest back to selblocks:
+    return "@" +test.file.path+ ': ' +(commandIdx+1) + ": [" + $$.fmtCmd( test.commands[commandIdx] )+ "]";
   };
 
   //================= utils ===============
