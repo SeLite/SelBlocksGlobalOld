@@ -1183,7 +1183,7 @@ var expandStoredVars;
     };
     
     var tryState = bubbleToTryBlock(isTryWithMatchingOrFinally);
-    if( tryState.invokedFromJavascript ) {
+    if( tryState.invokedFromJavascript ) {//@TODO This seems un-needed.
         LOG.warn('bubbleCommand');
         $$.tcf.bubbling = null; // Maybe not needed
         return;
