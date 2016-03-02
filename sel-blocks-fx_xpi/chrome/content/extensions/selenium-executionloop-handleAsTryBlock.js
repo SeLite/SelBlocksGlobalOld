@@ -18,6 +18,7 @@
   
   // Based on a part of $$.handleAsTryBlock from SelBlocks
   $$.testLoopResumeHandleError= function testLoopResumeHandleError( e ) {
+      LOG.warn( 'testLoopResumeHandleError');
       var originalMessage= e.message; // Selenium IDE generates 'false' message for failed assertions, and those then would only match catch | 'false' |. Following makes them catchable by the actual assertion message.
       if( e.message==='false' ) {
           e.message= this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |";
@@ -30,7 +31,6 @@
         this.continueTest();
       }
       else if( selenium.callStack().top().invokedFromJavascript ) {
-        debugger;
         LOG.warn( 'testLoopResumeHandleError: invokedFromJavascript, popping callStack');
         !selenium.callStack().top().onFailure || selenium.callStack().top().onFailure( e );
         LOG.warn( 'testLoopResumeHandleError: invokedFromJavascript, after calling onFailure (if any)');
@@ -39,6 +39,7 @@
         this.continueTest();
       }
       else {
+          debugger;
         this._handleCommandError(e); // causes command to be marked in red
         this.testComplete();
       }

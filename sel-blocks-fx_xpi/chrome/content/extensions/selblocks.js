@@ -442,7 +442,7 @@ var expandStoredVars;
         return null;
       }
       while (!_hasCriteria(stack.top())) {
-        debugger;stack.pop();
+        stack.pop();
       }
       return stack.top();
     };
@@ -1055,7 +1055,8 @@ var expandStoredVars;
       // Override testLoopResumeHandleFailedResult first and testLoopResumeHandleError second, because the overriden testLoopResumeHandleError() expects the top intercepted function to be itself, so it can call $$.fn.getInterceptTop().attrs.manageError(e).
       $$.fn.interceptPush(editor, "testLoopResumeHandleError",
           $$.testLoopResumeHandleError, {
-            manageError: function doTryHandlerError(err) {
+            manageError: function manageError(err) {
+                debugger;
               return self.handleCommandError(err);
             }
           });
@@ -1665,7 +1666,7 @@ var expandStoredVars;
       assert( !invokedFromJavascript, "Should have invokedFromJavascript undefined/false." );
       LOG.warn( 'doCall: isReturning: popping call Stack');
       // returning from completed function
-      debugger;var popped= callStack.pop();
+      var popped= callStack.pop();
       loop.commandError= popped.originalCommandError;
       var _result= storedVars._result;
       storedVars= popped.savedVars; //restoreVarState( popped.savedVars );
@@ -1673,7 +1674,7 @@ var expandStoredVars;
       assert( testCase===popped.testCase, "The popped testCase is different." ); // Not sure why, but this seems to be true.
     }
     else {
-        LOG.warn('doCall invokedFromJavascript: ' +invokedFromJavascript);
+        LOG.warn('doCall invokedFromJavascript: ' +invokedFromJavascript+ ', callFromAsync: ' +callFromAsync);
       // Support $stored-variablename, just like string{} and getQs, storeQs...
       argSpec= expandStoredVars(argSpec);
       // save existing variable state and set args as local variables
@@ -1723,7 +1724,7 @@ var expandStoredVars;
   Selenium.prototype.callFromAsync= function callFromAsync( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
-    LOG.warn('invokeFromJavascript()');
+    LOG.warn('callFromAsync()');
     testCase.callFromAsync= {
         functionName: seleneseFunctionName,
         seleneseParameters,
@@ -1795,7 +1796,6 @@ var expandStoredVars;
           //if( !activeCallFrame.callFromAsync ) {
               setNextCommand( shiftGlobIdx(1, activeCallFrame.returnIdx) );
           //} 
-          debugger;
           LOG.warn( 'returnFromFunction: pop callStack');
             var previousCallFrame= callStack.pop();
             //previousCallFrame.isReturning= true; //?
