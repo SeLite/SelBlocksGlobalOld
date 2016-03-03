@@ -279,6 +279,7 @@ var expandStoredVars;
       //"TODO:"
       if( result<0 || result>=editor.app.testSuite.tests[localCaseIdxPart(globIdxValue)].content.commands.length ) {
           var msg= 'In localIdx("' +globIdxValue+ '"), result ' +result+ ' is not a valid command index';
+          debugger;
           LOG.error( msg );
           throw new Error(msg);
       }
@@ -1802,7 +1803,7 @@ var expandStoredVars;
           testCase.debugContext.debugIndex= activeCallFrame.debugIndex;
           //setNextCommand( activeCallFrame.returnIdx );
           //if( !activeCallFrame.callFromAsync ) {
-              setNextCommand( shiftGlobIdx(1, activeCallFrame.returnIdx) );
+          activeCallFrame.callFromAsync || setNextCommand( activeCallFrame.returnIdx );
           //} 
           LOG.warn( 'returnFromFunction: pop callStack');
           var previousCallFrame= callStack.pop();
