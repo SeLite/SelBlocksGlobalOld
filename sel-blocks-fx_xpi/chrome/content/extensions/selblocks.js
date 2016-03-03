@@ -279,7 +279,6 @@ var expandStoredVars;
       //"TODO:"
       if( result<0 || result>=editor.app.testSuite.tests[localCaseIdxPart(globIdxValue)].content.commands.length ) {
           var msg= 'In localIdx("' +globIdxValue+ '"), result ' +result+ ' is not a valid command index';
-          debugger;
           LOG.error( msg );
           throw new Error(msg);
       }
@@ -418,7 +417,7 @@ var expandStoredVars;
   };
   // retrieve the blockDef for the given blockDef frame
   var blkDefFor= function blkDefFor(stackFrame) {
-    if (!stackFrame) {debugger;
+    if (!stackFrame) {
       return null;
     }
     return blkDefAt(stackFrame.idx);
@@ -1057,7 +1056,6 @@ var expandStoredVars;
       $$.fn.interceptPush(editor, "testLoopResumeHandleError",
           $$.testLoopResumeHandleError, {
             manageError: function manageError(err) {
-                //debugger;
               return self.handleCommandError(err);
             }
           });
@@ -1129,7 +1127,6 @@ var expandStoredVars;
     if( tryState ) {
         $$.LOG.debug("error encountered while: " + tryState.execPhase);
         if (hasUnspentCatch(tryState)) {
-            debugger;
           if (this.isMatchingCatch(err, tryDef.catchIdx)) {
             // an expected kind of error has been caught
             $$.LOG.info("@" + (idxHere(+1)) + ", error has been caught" + fmtCatching(tryState));
@@ -1242,7 +1239,6 @@ var expandStoredVars;
     if( !tryState && callFrame./*invokedFromJavascript*/callFromAsync ) {
         LOG.warn('bubbleToTryBlock: level 0 invokedFromJavascript. popping callStack');
         
-        //debugger;
         var previousCallFrame = callStack.pop(); // Minor TODO simplify: remove variable previousCallFrame, since it's the same as callFrame, since it came from top(). Keep callStack.pop().
         callFrame.callFromAsync || restoreCallFrame( previousCallFrame ); // maybe not needed
         // @TODO simplify dependant code - because now, in the following callFromAsync is always true
@@ -1250,7 +1246,6 @@ var expandStoredVars;
     }
     while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
       LOG.warn( 'bubbleToTryBlock: popping callStack from within while() loop.');
-      //debugger;
       callFrame = callStack.pop();
       restoreCallFrame( callFrame );
       $$.LOG.info("function '" + callFrame.name + "' aborting due to error");
