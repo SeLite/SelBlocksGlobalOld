@@ -491,7 +491,7 @@ var expandStoredVars;
            : -1;
     }
     else {
-      // SelBlocksGlobal hook for SeLite Bootstrap. @TODO This shouldn't be here, but in testcase-debug-context. However, that would currently be a pain in the neck due to https://github.com/SeleniumHQ/selenium/issues/1537 and https://github.com/SeleniumHQ/selenium/issues/1549 (listed in ThirdPartyIssues.md).
+      // SelBlocksGlobal hook for SeLite Bootstrap. @TODO For future: This shouldn't be here, but in testcase-debug-context. However, that would currently be a pain in the neck due to https://github.com/SeleniumHQ/selenium/issues/1537 and https://github.com/SeleniumHQ/selenium/issues/1549 (listed in ThirdPartyIssues.md).
       if( typeof Selenium.reloadScripts==='function' ) { // SeLite Bootstrap is loaded
           LOG.debug('selblocks calling Selenium.reloadScripts()');
           Selenium.reloadScripts();
@@ -1239,8 +1239,8 @@ var expandStoredVars;
     if( !tryState && callFrame./*invokedFromJavascript*/callFromAsync ) {
         LOG.warn('bubbleToTryBlock: level 0 invokedFromJavascript. popping callStack');
         
-        var previousCallFrame = callStack.pop(); // Minor TODO simplify: remove variable previousCallFrame, since it's the same as callFrame, since it came from top(). Keep callStack.pop().
-        callFrame.callFromAsync || restoreCallFrame( previousCallFrame ); // maybe not needed
+        callStack.pop();
+        callFrame.callFromAsync || restoreCallFrame( callFrame ); // TODO maybe not needed
         // @TODO simplify dependant code - because now, in the following callFromAsync is always true
         return {invokedFromJavascript: true, callFromAsync: callFrame.callFromAsync};
     }
@@ -1250,11 +1250,11 @@ var expandStoredVars;
       restoreCallFrame( callFrame );
       $$.LOG.info("function '" + callFrame.name + "' aborting due to error");
       tryState = unwindToBlock(_hasCriteria);
-      if( !tryState && callFrame./*invokedFromJavascript*/callFromAsync ) {
+      if( !tryState && callFrame.callFromAsync ) {
           LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
           
           var previousCallFrame= callStack.pop();
-          callFrame.callFromAsync || restoreCallFrame( previousCallFrame ); // maybe not needed
+          callFrame.callFromAsync || restoreCallFrame( previousCallFrame ); // TODO maybe not needed
           return {invokedFromJavascript: true, callFromAsync: callFrame.callFromAsync};
       }
     }
@@ -1796,10 +1796,7 @@ var expandStoredVars;
           // since there wasn't any. Hence we handle the stack here.
           testCase= activeCallFrame.testCase;
           testCase.debugContext.debugIndex= activeCallFrame.debugIndex;
-          //setNextCommand( activeCallFrame.returnIdx );
-          //if( !activeCallFrame.callFromAsync ) {
           activeCallFrame.callFromAsync || setNextCommand( activeCallFrame.returnIdx );
-          //} 
           LOG.warn( 'returnFromFunction: pop callStack');
           var previousCallFrame= callStack.pop();
             //previousCallFrame.isReturning= true; //?
@@ -1820,9 +1817,8 @@ var expandStoredVars;
       return;
     }
     // intercept command processing and simply stop test execution instead of executing the next command
-    //@TODO This doesn't seem to matter, which one:
-    $$.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", $$.handleAsExitTest);
-    //$$.fn.interceptOnce(editor.selDebugger.runner.currentTest, "resume", $$.handleAsExitTest);
+    //Following has same effect as intercepting "resume" on editor.selDebugger.runner.IDETestLoop.prototype. Original SelBlocks overrode it on $$.seleniumTestRunner.currentTest, but that is not available here.
+    $$.fn.interceptOnce(editor.selDebugger.runner.currentTest, "resume", $$.handleAsExitTest);
   };
 
 
