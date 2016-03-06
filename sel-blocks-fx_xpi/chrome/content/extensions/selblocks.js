@@ -347,7 +347,6 @@ var expandStoredVars;
   var callStack = null;  // command execution stack
   
   /** Solely for selenium-executionloop-handleAsTryBlock.js. */
-  // @TODO DOC JavascriptXXX.md: don't have function callStack() here, because then 'return callStack' returns that function, instead of the outer variable callStack! OR: use a different name.
   Selenium.prototype.callStack= function callStackFunc() {
       return callStack;
   };
@@ -1182,11 +1181,6 @@ var expandStoredVars;
     };
     
     var tryState = bubbleToTryBlock(isTryWithMatchingOrFinally);
-    if( tryState.invokedFromJavascript ) {//@TODO This seems un-needed.
-        LOG.warn('bubbleCommand');
-        $$.tcf.bubbling = null; // Maybe not needed
-        return;
-    }
     var tryDef = blkDefFor(tryState);
     $$.tcf.bubbling = { mode: "command", srcIdx: cmdIdx, _isStopCriteria: _isContextBlockType };
     if (hasUnspentFinally(tryState)) {
@@ -1236,11 +1230,10 @@ var expandStoredVars;
     }
     var callFrame = callStack.top();
     var tryState = unwindToBlock(_hasCriteria);
-    if( !tryState && callFrame./*invokedFromJavascript*/callFromAsync ) {
+    if( !tryState && callFrame.callFromAsync ) {
         LOG.warn('bubbleToTryBlock: level 0 invokedFromJavascript. popping callStack');
         
         callStack.pop();
-        callFrame.callFromAsync || restoreCallFrame( callFrame ); // TODO maybe not needed
         // @TODO simplify dependant code - because now, in the following callFromAsync is always true
         return {invokedFromJavascript: true, callFromAsync: callFrame.callFromAsync};
     }
@@ -1252,9 +1245,7 @@ var expandStoredVars;
       tryState = unwindToBlock(_hasCriteria);
       if( !tryState && callFrame.callFromAsync ) {
           LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
-          
-          var previousCallFrame= callStack.pop();
-          callFrame.callFromAsync || restoreCallFrame( previousCallFrame ); // TODO maybe not needed
+          callStack.pop();
           return {invokedFromJavascript: true, callFromAsync: callFrame.callFromAsync};
       }
     }
