@@ -1137,8 +1137,8 @@ var expandStoredVars;
             return true;
           }
         }
-        if( tryState./*invokedFromJavascript*/callFromAsync ) {
-            LOG.warn( 'handleCommandError: invokedFromJavascript, callFromAsync: ' +tryState.callFromAsync );
+        if( tryState.callFromAsync ) {
+            LOG.debug( 'handleCommandError(): callFromAsync' );
             $$.tcf.bubbling = null;
             return !tryState.callFromAsync;
         }
@@ -1231,7 +1231,7 @@ var expandStoredVars;
     var callFrame = callStack.top();
     var tryState = unwindToBlock(_hasCriteria);
     if( !tryState && callFrame.callFromAsync ) {
-        LOG.warn('bubbleToTryBlock: level 0 invokedFromJavascript. popping callStack');
+        LOG.debug('bubbleToTryBlock(): callFromAsync. Popping callStack');
         
         callStack.pop();
         // @TODO simplify dependant code - because now, in the following callFromAsync is always true
