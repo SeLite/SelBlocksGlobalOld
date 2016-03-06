@@ -471,15 +471,15 @@ var expandStoredVars;
   // And we intercept do it on the prototype, so that it applies to any test cases.
   // Other differences to SelBlocks: no support for onServer; no return value.
   var nextCommand= function nextCommand() {
-    if( testCase.callFromAsync ) {
-        LOG.warn( 'nextCommand: callFromAsync' );
+    if( testCase.calledFromAsync ) {
+        LOG.warn( 'nextCommand: testCase.calledFromAsync' );
         assert( !this.started, "When using callFromAsync, the test case must not have started yet." );
         this.started = true;
         assert( branchIdx===null, "branchIdx should be null when invoking Selenese from Javascript, but it's: " +branchIdx );
         // The following means that nextCommand() has a big side-effect of actually running doCall().
         LOG.warn( 'nextCommand() invoking doCall()');
-        selenium.doCall( testCase.callFromAsync.functionName, testCase.callFromAsync.seleneseParameters, /*invokedFromJavascript*/true, testCase.callFromAsync.onSuccess, testCase.callFromAsync.onFailure, /*callFromAsync*/true );
-        delete testCase['callFromAsync'];
+        selenium.doCall( testCase.calledFromAsync.functionName, testCase.calledFromAsync.seleneseParameters, /*invokedFromJavascript*/true, testCase.calledFromAsync.onSuccess, testCase.calledFromAsync.onFailure, /*callFromAsync*/true );
+        delete testCase['calledFromAsync'];
     }
     LOG.debug( 'SelBlocks head-intercept of TestCaseDebugContext.nextCommand()');
     if (!this.started) {
@@ -1719,8 +1719,8 @@ var expandStoredVars;
   Selenium.prototype.callFromAsync= function callFromAsync( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
-    LOG.warn('callFromAsync()');
-    testCase.callFromAsync= {
+    LOG.debug('callFromAsync()');
+    testCase.calledFromAsync= {
         functionName: seleneseFunctionName,
         seleneseParameters,
         onSuccess,
