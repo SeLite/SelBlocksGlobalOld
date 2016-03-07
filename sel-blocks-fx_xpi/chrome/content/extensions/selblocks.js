@@ -1122,8 +1122,14 @@ var expandStoredVars;
   Selenium.prototype.handleCommandError= function handleCommandError(err)
   {
     var tryState = bubbleToTryBlock(Stack.isTryBlock);
-    var tryDef = blkDefFor(tryState);
+    var tryDef;
     if( tryState ) {
+        if( tryState.stateFromAsync ) {
+            LOG.debug( 'handleCommandError(): stateFromAsync' );
+            $$.tcf.bubbling = null;
+            return false;
+        }
+        tryDef = blkDefFor(tryState);
         $$.LOG.debug("error encountered while: " + tryState.execPhase);
         if (hasUnspentCatch(tryState)) {
           if (this.isMatchingCatch(err, tryDef.catchIdx)) {
@@ -1137,26 +1143,23 @@ var expandStoredVars;
             return true;
           }
         }
-        if( tryState.stateFromAsync ) {
-            LOG.debug( 'handleCommandError(): stateFromAsync' );
-            $$.tcf.bubbling = null;
-            return false;
-        }
     }
     // error not caught .. instigate bubbling
     $$.LOG.debug("error not caught, bubbling error: '" + err.message + "'");
     $$.tcf.bubbling = { mode: "error", error: err, srcIdx: idxHere() };
-    if (tryState && hasUnspentFinally(tryState)) {
-      $$.LOG.info("Bubbling suspended while finally block runs");
-      tryState.execPhase = "finallying";
-      tryState.hasFinaled = true;
-      setNextCommand(tryDef.finallyIdx);
-      return true;
-    }
-    if ($$.tcf.nestingLevel > 0) {
-      $$.LOG.info("No further handling, error bubbling will continue outside of this try.");
-      setNextCommand(tryDef.endIdx);
-      return true;
+    if (tryState ) {
+      if( hasUnspentFinally(tryState)) {
+        $$.LOG.info("Bubbling suspended while finally block runs");
+        tryState.execPhase = "finallying";
+        tryState.hasFinaled = true;
+        setNextCommand(tryDef.finallyIdx);
+        return true;
+      }
+      if ($$.tcf.nestingLevel > 0) {
+        $$.LOG.info("No further handling, error bubbling will continue outside of this try.");
+        setNextCommand(tryDef.endIdx);
+        return true;
+      }
     }
     $$.LOG.info("No handling provided in this try section for this error: '" + err.message + "'");
     return false; // stop test

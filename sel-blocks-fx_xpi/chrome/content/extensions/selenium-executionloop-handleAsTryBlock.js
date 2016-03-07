@@ -18,7 +18,6 @@
   
   // Based on a part of $$.handleAsTryBlock from SelBlocks
   $$.testLoopResumeHandleError= function testLoopResumeHandleError( e ) {
-      debugger;
       LOG.warn( 'testLoopResumeHandleError');
       var originalMessage= e.message; // Selenium IDE generates 'false' message for failed assertions, and those then would only match catch | 'false' |. Following makes them catchable by the actual assertion message.
       if( e.message==='false' ) {
