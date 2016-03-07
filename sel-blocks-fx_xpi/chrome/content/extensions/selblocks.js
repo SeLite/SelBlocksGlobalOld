@@ -1651,7 +1651,7 @@ var expandStoredVars;
     !callFromAsync || assert(invokedFromJavascript, "Since callFromAsync is set, you must also set invokedFromJavascript.");
     var loop = currentTest || htmlTestRunner.currentTest; // See Selenium.prototype.doRollup()
     assertRunning(); // TBD: can we do single execution, ie, run from this point then break on return?
-    if (argSpec) {
+    if( argSpec && typeof argSpec!=='object' ) {
       this.assertCompilable("var ", argSpec, ";", "Invalid call parameter(s)");
     }
     var funcIdx = symbols[funcName];
@@ -1675,10 +1675,17 @@ var expandStoredVars;
           assert(!this.invokedFromAsync, "invokedFromAsync is already set. Do not use callFromAsync() until the previous flow ends." );
           this.invokedFromAsync= true;
       }
-      // Support $stored-variablename
-      argSpec= expandStoredVars(argSpec);
-      // save existing variable state and set args as local variables
-      var args = this.parseArgs(argSpec);
+      var args;
+      if( typeof argSpec==='object' ) {
+        // Parameters were passed in an object within =<>...<> as per http://selite.github.io/EnhancedSelenese.
+        args= argSpec;
+      }
+      else {
+        // Support $stored-variablename
+        argSpec= expandStoredVars(argSpec);
+        // save existing variable state and set args as local variables
+        args = this.parseArgs(argSpec);
+      }
       var savedVars= storedVars; //var savedVars = getVarStateFor(args);
       storedVars= args; //args= setVars(args);
 

@@ -13,6 +13,38 @@
 </thead><tbody>
 <tr>
 	<td>function</td>
+	<td>assertReceivedParameters</td>
+	<td>a, b</td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;assertEval</td>
+	<td>&nbsp;&nbsp;typeof storedVars.a!=='undefined'</td>
+	<td>true</td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;assertEval</td>
+	<td>&nbsp;&nbsp;typeof storedVars.b!=='undefined'</td>
+	<td>true</td>
+</tr>
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<!-- --- -->
+<tr>
+	<td>call</td>
+	<td>assertReceivedParameters</td>
+	<td>a=1, b=2</td>
+</tr>
+<tr>
+	<td>call</td>
+	<td>assertReceivedParameters</td>
+	<td>=&lt;&gt;{a: 1, b:2}&lt;&gt;</td>
+</tr>
+<!-- --- -->
+<tr>
+	<td>function</td>
 	<td>func</td>
 	<td>shouldFail</td>
 </tr>
