@@ -1736,9 +1736,9 @@ var expandStoredVars;
         onFailure
     };
     
-    // Roughly following effects of Editor.prototype.playCurrentTestCase():
     editor.suiteTreeView.currentTestCase==testCase || editor.suiteTreeView.testCaseChanged( testCase );
-    editor.playCurrentTestCase();
+    // Following increases The Runs/Failures count by 1, rather than resetting it. This code depends on Selenium internals.
+    editor.playCurrentTestCase( false, editor.testSuiteProgress.runs, editor.testSuiteProgress.total+1 );
   };
   
   Selenium.prototype.doFunction = function doFunction(funcName)
