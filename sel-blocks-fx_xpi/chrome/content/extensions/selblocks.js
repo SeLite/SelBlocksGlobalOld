@@ -1234,7 +1234,7 @@ var expandStoredVars;
         LOG.debug('bubbleToTryBlock(): frameFromAsync. Popping callStack');
         
         callStack.pop();
-        this.invokedFromAsync= false;
+        selenium.invokedFromAsync= false;
         return {stateFromAsync: true};
     }
     while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
@@ -1246,7 +1246,7 @@ var expandStoredVars;
       if( !tryState && callFrame.frameFromAsync ) {
           LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
           callStack.pop();
-          this.invokedFromAsync= false;
+          selenium.invokedFromAsync= false;
           return {stateFromAsync: true};
       }
     }
