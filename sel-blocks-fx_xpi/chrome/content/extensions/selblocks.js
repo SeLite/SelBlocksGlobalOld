@@ -12,8 +12,8 @@
  * - made functions (formerly scripts) callable across test cases
  * - made it compatible with Javscript strict mode - "use strict";
  * -- for that I've removed automatic access to stored variables (without using $). That affects mostly 'for' loop and right side of parameter assignments of 'call'. See http://selite.github.io/SelBlocksGlobal.
- * - added some syntax sugar to Selenese: string{..}, xpath{...}, object{..}, eval{..}, array[..]. See http://selite.github.io/EnhancedSelenese.
- * - if/while/for, call, string{}, xpath{...}, object{}, eval{} and array[] now recognise object "window" - just like getEval() did. 
+ * - see http://selite.github.io/EnhancedSelenese.
+ * - if/while/for, call, EnhancedSelenese now recognise object "window" - just like getEval() did. 
  * -- therefore evalWithExpandedStoredVars, dropToLoop, returnFromFunction, parseArgs are now a part of Selenium.prototype
  * -- other helper functions are now a part of Selenium.prototype, where needed
  * - changed 'xyz instanceof Array' to Array.isArray(xyz); this may be needed to recognise Array instances passed from different global scope
@@ -1675,7 +1675,7 @@ var expandStoredVars;
           assert(!this.invokedFromAsync, "invokedFromAsync is already set. Do not use callFromAsync() until the previous flow ends." );
           this.invokedFromAsync= true;
       }
-      // Support $stored-variablename, just like string{} and getQs, storeQs...
+      // Support $stored-variablename
       argSpec= expandStoredVars(argSpec);
       // save existing variable state and set args as local variables
       var args = this.parseArgs(argSpec);
@@ -1850,35 +1850,9 @@ var expandStoredVars;
   // This is not related to parseArgs(str) in chrome/content/selenium-core/test/RemoteRunnerTest.js
   Selenium.prototype.parseArgs= function parseArgs(argSpec) { // comma-sep -> new prop-set
     var args = {};
-    /* @TODO check & document whether I need to care about string{} here. Maybe just don't support string{...} for 'call' command - it wouldn't make sense for 'call' anyway. $variableName should work for 'call' without using string{...}. 'call' works with string{..}, but it's not recommended for now.
-
-    @TODO See preprocessParameter() in this file.
-
-    // Split argSpec if it is in format fieldA=valueA,fieldB=..string{...},fieldC=..string{..},..
-    // This regex allows parameter values within string{..} to contain commas or assignment =.
-    // The values within string{...} can't contain curly brackets { and }.
-    // @TODO Also support commas within '' or ""? But for now using string{} is a workaround.
-
-    // This regex is optimistic - assuming that argSpec is well-formed
-    var spacedRegex= /=\s*([^q][^,]*|string{{[^}]*)\}?\s*,?/;
-    var regex= new RegExp( spacedRegex.source.replace( / /g, '') );
-
-    var parms= argSpec.split( regex );
-    // The last item in parms[] is an odd empty string, which I ignore
-    for( var i = 0; i < parms.length-1; i+=2 ) {
-      var key= parms[i].trim();
-      var value = parms[i+1];
-      if( value.substr(0, 7)==='string{' ) {
-          value= value.substr( 7 );
-      }
-      if( typeof value !=='string' ) {
-          // @TODO Log an error instead of an alert:
-          alert( 'param ' +key+ ' has value (to evaluate): ' +value+ ' with constructor ' +value.constructor.name );
-          // For some reason, LOG.debug() doesn't work here.
-      }
-      args[ key ] = this.evalWithExpandedStoredVars( value ); // This would fail, since parseArgs() is not a member of Selenium.prototype
-    }
-    return args;/**/
+    // See preprocessParameter() in this file. It implements http://selite.github.io/EnhancedSelenese.
+    // Split argSpec if it is in format fieldA=valueA,fieldB=..<>...<>,fieldC=..<>..<>,..
+    // @TODO Also support commas within '' or ""? A workaround is to use EnhancedSelenese.
     // original from SelBlocks:
     var parms = iexpr.splitList(argSpec, ",");
     // var parms = argSpec.split(","); //before SelBlocks 2
@@ -2001,7 +1975,6 @@ var expandStoredVars;
   var fmtCmdRef= function fmtCmdRef(idx) {
     var test= localCase(idx);
     var commandIdx= localIdx(idx);
-    //@TODO suggest back to selblocks:
     return "@" +test.file.path+ ': ' +(commandIdx+1) + ": [" + $$.fmtCmd( test.commands[commandIdx] )+ "]";
   };
 
@@ -2392,20 +2365,13 @@ var expandStoredVars;
     // Levels of regex. parenthesis 12  3    3 2 1  12  3    3 2 1  12  3    3          3    32 1
     var enclosedBySpecialPairs= /((?:(?!<>).)*)<>((?:(?!<>).)+)<>((?:(?!<>)[^#@]|[#@](?!<>))*)/g;
     
-    // This sets a head intercept of chrome/content/selenium-core/scripts/selenium-api.js. See http://selite.github.io/EnhancedSelenese.
+    // A head intercept of preprocessParameter() from chrome/content/selenium-core/scripts/selenium-api.js. It implements http://selite.github.io/EnhancedSelenese.
     Selenium.prototype.preprocessParameter = function selBlocksGlobalPreprocessParameter(whole) {
         // javascript{..} doesn't replace ${variableName}.
         // Selenese ${variableName} requires {}, which is good because it separates it from the rest of the target/value,
         // so it's robust yet easy to use.
         // <>...<> replaces $xxx by the symbol/reference to the stored variable, so it is typed and it doesn't need to be quoted for Javascript processing.
-        
-        /** string{} - evaluate the expression and cast it as a string. Access stored variables using $xyz. If the stored
-            variable is an object/array, you can access its fields - i.e. $object-var-name.fieldXYZ or $array-var-name[index].
-           string{} transforms the evaluated result into a string. This way we can use it with standard Se actions
-           click/select/type, even if the evaluated value is a number.
-           That limits the usage of string{}: you normally don't want string{} to yield an object/array. For such cases use object{...} or array[...]. E.g. passing an
-             object as the second parameter to 'typeRandom' action (function doTypeRandom).
-        */
+        // Hence EnhancedSelenese can access stored variables, their fields/subfields and methods using $xyz.
         LOG.debug('SeLite SelBlocks Global head override of preprocessParameter(): ' +whole );
         var numberOfSpecialPairs= 0;
         for( var i=1; i<whole.length; i++ ) {
