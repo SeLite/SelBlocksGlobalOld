@@ -473,7 +473,7 @@ var expandStoredVars;
   var nextCommand= function nextCommand() {
     if( testCase.calledFromAsync ) {
         LOG.warn( 'nextCommand: testCase.calledFromAsync' );
-        assert( !this.started, "When using callFromAsync, the test case must not have started yet." );
+        assert( !this.started, "When using callFromAsync(), the test case must not have started yet." );
         this.started = true;
         assert( branchIdx===null, "branchIdx should be null when invoking Selenese from Javascript, but it's: " +branchIdx );
         // The following means that nextCommand() has a big side-effect of actually running doCall().
@@ -1137,10 +1137,10 @@ var expandStoredVars;
             return true;
           }
         }
-        if( tryState.callFromAsync ) {
-            LOG.debug( 'handleCommandError(): callFromAsync' );
+        if( tryState.stateFromAsync ) {
+            LOG.debug( 'handleCommandError(): stateFromAsync' );
             $$.tcf.bubbling = null;
-            return !tryState.callFromAsync;
+            return false;
         }
     }
     // error not caught .. instigate bubbling
@@ -1223,19 +1223,19 @@ var expandStoredVars;
   };
   
   // unwind the blockStack, and callStack (ie, aborting functions), until reaching the given criteria
- /** @return {null|false} if there is no appropriate try block. */
+ /** @return {null|false} if there is no appropriate try block. Return trystate object. */
   var bubbleToTryBlock= function bubbleToTryBlock(_hasCriteria) {
     if ($$.tcf.nestingLevel < 0) {
       $$.LOG.warn("bubbleToTryBlock() called outside of any try nesting");
     }
     var callFrame = callStack.top();
     var tryState = unwindToBlock(_hasCriteria);
-    if( !tryState && callFrame.callFromAsync ) {
-        LOG.debug('bubbleToTryBlock(): callFromAsync. Popping callStack');
+    if( !tryState && callFrame.frameFromAsync ) {
+        LOG.debug('bubbleToTryBlock(): frameFromAsync. Popping callStack');
         
         callStack.pop();
-        // @TODO simplify dependant code - because now, in the following callFromAsync is always true
-        return {invokedFromJavascript: true, callFromAsync: callFrame.callFromAsync};
+        // @TODO simplify dependant code - because now, in the following frameFromAsync is always true
+        return {invokedFromJavascript: true, stateFromAsync: callFrame.frameFromAsync};
     }
     while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
       LOG.warn( 'bubbleToTryBlock: popping callStack from within while() loop.');
@@ -1243,10 +1243,10 @@ var expandStoredVars;
       restoreCallFrame( callFrame );
       $$.LOG.info("function '" + callFrame.name + "' aborting due to error");
       tryState = unwindToBlock(_hasCriteria);
-      if( !tryState && callFrame.callFromAsync ) {
+      if( !tryState && callFrame.frameFromAsync ) {
           LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
           callStack.pop();
-          return {invokedFromJavascript: true, callFromAsync: callFrame.callFromAsync};
+          return {invokedFromJavascript: true, stateFromAsync: callFrame.frameFromAsync};
       }
     }
     return tryState;
@@ -1665,7 +1665,7 @@ var expandStoredVars;
       assert( testCase===popped.testCase, "The popped testCase is different." ); // Not sure why, but this seems to be true.
     }
     else {
-        LOG.warn('doCall invokedFromJavascript: ' +invokedFromJavascript+ ', callFromAsync: ' +callFromAsync);
+        LOG.debug('doCall invokedFromJavascript: ' +invokedFromJavascript+ ', callFromAsync: ' +callFromAsync);
       // Support $stored-variablename, just like string{} and getQs, storeQs...
       argSpec= expandStoredVars(argSpec);
       // save existing variable state and set args as local variables
@@ -1704,7 +1704,7 @@ var expandStoredVars;
            * - do not invoke doCall() from javascript{...} or from EnhancedSyntax <>...<>
            */
           invokedFromJavascript,
-          callFromAsync,
+          frameFromAsync: callFromAsync,
           onSuccess,
           onFailure,
           //branchIdx: branchIdx,
@@ -1781,18 +1781,16 @@ var expandStoredVars;
         // Don't callStack.pop() here - doCall() does it instead (in its second run)
       }
       else {
-          LOG.warn('returnFromFunction: invokedFromJavascript; callFromAsync: ' +activeCallFrame.callFromAsync);
+          LOG.debug('returnFromFunction: invokedFromJavascript; frameFromAsync: ' +activeCallFrame.frameFromAsync);
           //setNextCommand( activeCallFrame.branchIdx ); This failed when branchIdx wasn't set yet
           // When using invokedFromJavascript, then the flow control doesn't go to a separate invoker 'call' Selenese command,
           // since there wasn't any. Hence we handle the stack here.
           testCase= activeCallFrame.testCase;
           testCase.debugContext.debugIndex= activeCallFrame.debugIndex;
-          activeCallFrame.callFromAsync || setNextCommand( activeCallFrame.returnIdx );
-          LOG.warn( 'returnFromFunction: pop callStack');
-          var previousCallFrame= callStack.pop();
-            //previousCallFrame.isReturning= true; //?
-          //fails: restoreCallFrame( callStack.top() );
-          if( activeCallFrame.callFromAsync ) {
+          activeCallFrame.frameFromAsync || setNextCommand( activeCallFrame.returnIdx );
+          LOG.debug( 'returnFromFunction: pop callStack');
+          callStack.pop();
+          if( activeCallFrame.frameFromAsync ) {
             
             editor.selDebugger.runner.currentTest.commandComplete= () => {}; //@TODO onSuccess??
             $$.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", $$.handleAsExitTest);
