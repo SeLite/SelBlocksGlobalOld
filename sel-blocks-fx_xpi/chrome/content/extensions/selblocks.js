@@ -1234,8 +1234,7 @@ var expandStoredVars;
         LOG.debug('bubbleToTryBlock(): frameFromAsync. Popping callStack');
         
         callStack.pop();
-        // @TODO simplify dependant code - because now, in the following frameFromAsync is always true
-        return {invokedFromJavascript: true, stateFromAsync: callFrame.frameFromAsync};
+        return {stateFromAsync: true};
     }
     while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
       LOG.warn( 'bubbleToTryBlock: popping callStack from within while() loop.');
@@ -1246,7 +1245,7 @@ var expandStoredVars;
       if( !tryState && callFrame.frameFromAsync ) {
           LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
           callStack.pop();
-          return {invokedFromJavascript: true, stateFromAsync: callFrame.frameFromAsync};
+          return {stateFromAsync: true};
       }
     }
     return tryState;
@@ -1697,13 +1696,13 @@ var expandStoredVars;
           blockStack: new Stack(),
           testCase,
           originalCommandError,
-          /* Following are only used when invokedFromJavascript is true.
+          invokedFromJavascript,
+          /* Following fields are only used when invokedFromJavascript is true.
            * If invokedFromJavascript is true, after we finish/return/throw/bubble from the function body, we don't set next Selenese command, because
            * - if this doCall() was invoked from Javascript (with no Selenese on the call stack, e.g. from GUI via a callback closure method), then we don't set the next command, since we're returning back to Javascript layer.
            * - if this doCall() was invoked from getEval(), then Selenium sets the next command to be the one after that getEval()
            * - do not invoke doCall() from javascript{...} or from EnhancedSyntax <>...<>
            */
-          invokedFromJavascript,
           frameFromAsync: callFromAsync,
           onSuccess,
           onFailure,
@@ -1787,14 +1786,15 @@ var expandStoredVars;
           // since there wasn't any. Hence we handle the stack here.
           testCase= activeCallFrame.testCase;
           testCase.debugContext.debugIndex= activeCallFrame.debugIndex;
-          activeCallFrame.frameFromAsync || setNextCommand( activeCallFrame.returnIdx );
-          LOG.debug( 'returnFromFunction: pop callStack');
-          callStack.pop();
           if( activeCallFrame.frameFromAsync ) {
-            
             editor.selDebugger.runner.currentTest.commandComplete= () => {}; //@TODO onSuccess??
             $$.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", $$.handleAsExitTest);
-        }
+          }
+          else {
+            setNextCommand( activeCallFrame.returnIdx );              
+          }
+          LOG.debug( 'returnFromFunction: pop callStack');
+          callStack.pop();
       }
     }
   };
