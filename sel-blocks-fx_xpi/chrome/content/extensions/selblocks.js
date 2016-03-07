@@ -1234,6 +1234,7 @@ var expandStoredVars;
         LOG.debug('bubbleToTryBlock(): frameFromAsync. Popping callStack');
         
         callStack.pop();
+        this.invokedFromAsync= false;
         return {stateFromAsync: true};
     }
     while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
@@ -1245,6 +1246,7 @@ var expandStoredVars;
       if( !tryState && callFrame.frameFromAsync ) {
           LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
           callStack.pop();
+          this.invokedFromAsync= false;
           return {stateFromAsync: true};
       }
     }
@@ -1643,6 +1645,7 @@ var expandStoredVars;
    * */
   Selenium.prototype.doCall = function doCall(funcName, argSpec, invokedFromJavascript=false, onSuccess, onFailure, callFromAsync=false )
   {
+    !callFromAsync || assert(invokedFromJavascript, "Since callFromAsync is set, you must also set invokedFromJavascript.");
     var loop = currentTest || htmlTestRunner.currentTest; // See Selenium.prototype.doRollup()
     assertRunning(); // TBD: can we do single execution, ie, run from this point then break on return?
     if (argSpec) {
@@ -1664,7 +1667,11 @@ var expandStoredVars;
       assert( testCase===popped.testCase, "The popped testCase is different." ); // Not sure why, but this seems to be true.
     }
     else {
-        LOG.debug('doCall invokedFromJavascript: ' +invokedFromJavascript+ ', callFromAsync: ' +callFromAsync);
+      LOG.debug('doCall invokedFromJavascript: ' +invokedFromJavascript+ ', callFromAsync: ' +callFromAsync);
+      if( callFromAsync ) {
+          assert(!this.invokedFromAsync, "invokedFromAsync is already set. Do not use callFromAsync() until the previous flow ends." );
+          this.invokedFromAsync= true;
+      }
       // Support $stored-variablename, just like string{} and getQs, storeQs...
       argSpec= expandStoredVars(argSpec);
       // save existing variable state and set args as local variables
@@ -1789,6 +1796,7 @@ var expandStoredVars;
           if( activeCallFrame.frameFromAsync ) {
             editor.selDebugger.runner.currentTest.commandComplete= () => {}; //@TODO onSuccess??
             $$.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", $$.handleAsExitTest);
+            this.invokedFromAsync= false;
           }
           else {
             setNextCommand( activeCallFrame.returnIdx );              
