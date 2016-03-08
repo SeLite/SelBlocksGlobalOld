@@ -212,9 +212,11 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
 </function>
 <function name="call">
     <param name="srcName">Name of the script to call.</param>
-    <param name="argSpec">Argument(s) passed to the called script, optional.
-        Comma-separated assignments in form <code>variableName=expression</code>.
-        You can use <code>$storedVariableName</code> to access stored variables in <code>expression</code>.
+    <param name="argSpec">Argument(s) passed to the called script, optional. Each argument becomes a stored Selenese variable in that function. Use following two ways:
+        <ol>
+            <li>Comma-separated assignments in form <code>variableName=expression</code>. You can use <code>$upperStoredVariableName</code> to access stored variables in <code>expression</code>.</li>
+            <li>Alternatively, pass an object passed <code>=&lt;&gt;...&lt;&gt;</code> as per https://selite.github.io/EnhancedSelenese. Each field of that object is passed to the Selenese function. (However, do not use <code>@&lt;&gt;...&lt;&gt;</code> syntax.)</li>
+        </ol>
     </param>
     <comment>Call a script with the given name. Just like calling a function/method in common
         programming languages. It
