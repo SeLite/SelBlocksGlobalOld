@@ -1677,6 +1677,7 @@ var expandStoredVars;
       }
       var args;
       if( typeof argSpec==='object' ) {
+        !( 'seLiteExtra' in argSpec ) || SeLiteMisc.fail( "Don't use @<>...<> with Selenese call command." );
         // Parameters were passed in an object within =<>...<> as per http://selite.github.io/EnhancedSelenese.
         args= argSpec;
       }
@@ -1698,7 +1699,7 @@ var expandStoredVars;
           originalCommandError.call( this, result ); // I've already restored this.commandError above *before* calling originalCommandError() here, because: if this was a deeper Selenese function call (i.e. a cascade of call -> function..endFunction) then originalCommandError() will restore any previous version of this.commandError, and I don't want to step on its feet here
       };
       
-      LOG.warn( 'doCall: pushing callStack');
+      LOG.debug( 'doCall: pushing callStack');
       callStack.push( {
           funcIdx,
           name: funcName,
@@ -2388,7 +2389,7 @@ var expandStoredVars;
             }
         }
         numberOfSpecialPairs%2===0 || SeLiteMisc.fail( "SeLite SelBlocks Global and its http://selite.github.io/EnhancedSelenese doesn't allow Selenese parameters to contain an odd number of character pairs <>. The parameter value was: " +whole );
-        // Match <>...<>, \<>...<>, =<>...<> and @<>...<>. Replace $xx parts with respective stored variables. Evaluate. If it was \<>...<>, then escape it as an XPath string. If it was @<>...<>, then make the rest a String object (rather than a string primitive) and store thesult of Javascript in field seLiteExtra on that String object.
+        // Match <>...<>, \<>...<>, =<>...<> and @<>...<>. Replace $xx parts with respective stored variables. Evaluate. If it was \<>...<>, then escape it as an XPath string. If it was @<>...<>, then make the rest a String object (rather than a string primitive) and store the result of Javascript in field seLiteExtra on that String object.
         // I don't replace through a callback function - e.g. whole.replace( enclosedBySpecialPairs, function replacer(match, field) {..} ) - because that would always cast the replacement result as string.
         enclosedByEqualsSpecialPairs.lastIndex= 0;
         var match= enclosedByEqualsSpecialPairs.exec(whole);

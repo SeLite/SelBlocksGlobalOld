@@ -43,6 +43,48 @@
 	<td>=&lt;&gt;{a: 1, b:2}&lt;&gt;</td>
 </tr>
 <!-- --- -->
+<!--Check that using @<>....<> with call command fails:-->
+<tr>
+	<td>storeEval</td>
+	<td>false</td>
+	<td>seleneseCallFailed</td>
+</tr>
+<tr>
+	<td>try</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;call</td>
+	<td>func</td>
+	<td>unusedParameter=1@&lt;&gt;'Hi'&lt;&gt;</td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;catch</td>
+	<td>/.*/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;storeEval</td>
+	<td>true</td>
+	<td>seleneseCallFailed</td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;finally</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;assertEval</td>
+	<td>storedVars.seleneseCallFailed</td>
+	<td>true</td>
+</tr>
+<tr>
+	<td>endTry</td>
+	<td></td>
+	<td></td>
+</tr>
+<!-- --- -->
 <tr>
 	<td>function</td>
 	<td>func</td>
