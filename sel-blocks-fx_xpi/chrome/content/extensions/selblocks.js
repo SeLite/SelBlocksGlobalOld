@@ -1639,7 +1639,7 @@ var expandStoredVars;
 
   // ================================================================================
   /** Note: See also ThirdPartyIssues.md > https://github.com/SeleniumHQ/selenium/issues/1635
-   * Both onSuccess or onFailure will be called on success or failure, respectively. They are invoked asynchronously, *after* returning back to Javascript caller (non-Selenese layer that invoked this Selenese).
+   * If callFromAsync, then either onSuccess or onFailure will be called on success or failure, respectively. It will be invoked asynchronously, *after* returning back to Javascript caller (i.e. to a non-Selenese layer that invoked this doCall()).
    * @param {string} funcName
    * @param {string} argSpec Comma-separated assignments of Selenese parameters. See reference.xml.
    * @param {boolean} [invokedFromJavascript=false] Whether invoked from Javascript (rather than directly from Selenese)
@@ -1649,6 +1649,7 @@ var expandStoredVars;
   Selenium.prototype.doCall = function doCall(funcName, argSpec, invokedFromJavascript=false, onSuccess, onFailure, callFromAsync=false )
   {
     !callFromAsync || assert(invokedFromJavascript, "Since callFromAsync is set, you must also set invokedFromJavascript.");
+    !onSuccess && !onFailure || assert( callFromAsync, "Only use onSuccess or onFailure with callFromAsync()." );
     var loop = currentTest || htmlTestRunner.currentTest; // See Selenium.prototype.doRollup()
     assertRunning(); // TBD: can we do single execution, ie, run from this point then break on return?
     if( argSpec && typeof argSpec!=='object' ) {
@@ -1733,6 +1734,10 @@ var expandStoredVars;
     }
   };
   
+  Selenium.prototype.call= function call( funcName, argSpec, onSuccess, onFailure ) {
+      this.doCall( funcName, argSpec, /*invokedFromJavascript*/true, onSuccess, onFailure );
+  };
+  
   Selenium.prototype.callFromAsync= function callFromAsync( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
@@ -1805,7 +1810,8 @@ var expandStoredVars;
           testCase= activeCallFrame.testCase;
           testCase.debugContext.debugIndex= activeCallFrame.debugIndex;
           if( activeCallFrame.frameFromAsync ) {
-            editor.selDebugger.runner.currentTest.commandComplete= () => {}; //@TODO onSuccess??
+            editor.selDebugger.runner.currentTest.commandComplete= () => {};
+            !activeCallFrame.onSuccess || window.setTimeout( ()=>activeCallFrame.onSuccess(), 0 );
             $$.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", $$.handleAsExitTest);
             this.invokedFromAsync= false;
           }

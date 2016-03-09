@@ -32,10 +32,9 @@
       }
       else if( selenium.callStack().top().invokedFromJavascript ) {
         LOG.warn( 'testLoopResumeHandleError: invokedFromJavascript, popping callStack');
-        !selenium.callStack().top().frameFromAsync || !selenium.callStack().top().onFailure || selenium.callStack().top().onFailure( e );
+        !selenium.callStack().top().frameFromAsync || !selenium.callStack().top().onFailure || window.setTimeout( ()=>selenium.callStack().top().onFailure( e ), 0 );
         LOG.warn( 'testLoopResumeHandleError: invokedFromJavascript, after calling onFailure (if any and if applicable)');
         selenium.callStack().pop();
-        //selenium.returnFromFunction(); //NO - or only use a part
         this.continueTest();
       }
       else {
