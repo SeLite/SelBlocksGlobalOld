@@ -11,26 +11,6 @@
 <thead>
 <tr><td rowspan="1" colspan="3">New Test</td></tr>
 </thead><tbody>
-<tr>
-	<td>function</td>
-	<td>assertReceivedParameters</td>
-	<td>a, b</td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;assertEval</td>
-	<td>&nbsp;&nbsp;typeof storedVars.a!=='undefined'</td>
-	<td>true</td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;assertEval</td>
-	<td>&nbsp;&nbsp;typeof storedVars.b!=='undefined'</td>
-	<td>true</td>
-</tr>
-<tr>
-	<td>endFunction</td>
-	<td></td>
-	<td></td>
-</tr>
 <!-- --- -->
 <tr>
 	<td>call</td>
@@ -85,62 +65,6 @@
 	<td></td>
 </tr>
 <!-- --- -->
-<tr>
-	<td>function</td>
-	<td>func</td>
-	<td>shouldFail</td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;getEval</td>
-	<td>if( storedVars.shouldFail ) throw new Error(storedVars.shouldFail);</td>
-	<td></td>
-</tr>
-<tr>
-	<td>endFunction</td>
-	<td></td>
-	<td></td>
-</tr>
-<!-- --- -->
-<tr>
-	<td>function</td>
-	<td>funcThatDoesntThrow</td>
-	<td>shouldFail</td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;try</td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
-	<td>if( storedVars.shouldFail ) throw new Error(storedVars.shouldFail);</td>
-	<td></td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
-	<td>alert( &quot;from Selenese function funcThatDoesntThrow&quot; )</td>
-	<td></td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;catch</td>
-	<td>/.*/</td>
-	<td></td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;finally</td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;endTry</td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
-	<td>endFunction</td>
-	<td></td>
-	<td></td>
-</tr>
 <!-- --- -->
 <tr>
 	<td>call</td>
@@ -150,47 +74,9 @@
 <!-- --- -->
 <tr>
 	<td>getEval</td>
-	<td>selenium.doCall( 'func', '', true )</td>
+	<td>selenium.callBack( 'func', '' )</td>
 	<td></td>
 </tr>
-<!-- --- -->
-<tr>
-	<td>if</td>
-	<td>false</td>
-	<td></td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;getEval</td>
-	<td>( ()=&gt;alert('hi') )();</td>
-	<td></td>
-</tr>
-<!-- --- -->
-<tr>
-	<td>&nbsp;&nbsp;getEval</td>
-	<td>alert( &quot;from Selenese eval()&quot; )</td>
-	<td></td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;getEval</td>
-	<td>selenium.doCall( 'func', '', true )</td>
-	<td></td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;getEval</td>
-	<td>alert( &quot;from Selenese eval() again&quot; )</td>
-	<td></td>
-</tr>
-<tr>
-	<td>&nbsp;&nbsp;getEval</td>
-	<td>selenium.doCall( 'func', 'shouldFail=&quot;first failure - unprotected&quot;', true )</td>
-	<td></td>
-</tr>
-<tr>
-	<td>endIf</td>
-	<td></td>
-	<td></td>
-</tr>
-<!-- --- -->
 <!-- --- -->
 <tr>
 	<td>try</td>
@@ -199,7 +85,7 @@
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
-	<td>selenium.doCall( 'func', 'shouldFail=&quot;first failure&quot;', true )</td>
+	<td>selenium.callBack( 'func', 'shouldFail=&quot;first failure&quot;' )</td>
 	<td></td>
 </tr>
 <tr>

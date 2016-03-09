@@ -1734,10 +1734,13 @@ var expandStoredVars;
     }
   };
   
-  Selenium.prototype.call= function call( funcName, argSpec, onSuccess, onFailure ) {
+  /** 'Synchronous' - i.e. for Javascript that is invoked from a Selenese script that is already running (via getEval or via custom Selenese command). It runs SelBlocks Global 'call' command for given Selenese function *after* the current Selenese command (i.e. getVal or custom Selenese command) finishes.
+   * */
+  Selenium.prototype.callBack= function callBack( funcName, argSpec, onSuccess, onFailure ) {
       this.doCall( funcName, argSpec, /*invokedFromJavascript*/true, onSuccess, onFailure );
   };
   
+  /** 'Asynchronous'- i.e. for Javascript invoked through e.g. SeLite Preview after a Selenese run finished. */
   Selenium.prototype.callFromAsync= function callFromAsync( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
@@ -1751,6 +1754,7 @@ var expandStoredVars;
     
     editor.suiteTreeView.currentTestCase==testCase || editor.suiteTreeView.testCaseChanged( testCase );
     // Following increases The Runs/Failures count by 1, rather than resetting it. This code depends on Selenium internals.
+    // Following invokes nextCommand(), which then uses the fields set on testCase above. It also validates that there is no test being run already.
     editor.playCurrentTestCase( false, editor.testSuiteProgress.runs, editor.testSuiteProgress.total+1 );
   };
   
