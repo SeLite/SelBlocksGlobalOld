@@ -179,8 +179,8 @@ var expandStoredVars;
   };
 
   // ----- SelBlocksGlobal:
-    /** @param TestCase optional
-     *  @return int 0-based index of given test case within the list of test cases
+    /** @param {object} givenTestCase TestCase optional
+     *  @returns int 0-based index of given test case within the list of test cases
      *  of the test suite
      **/
     var testCaseIdx= function testCaseIdx( givenTestCase ) {
@@ -198,7 +198,8 @@ var expandStoredVars;
           throw new Error(msg);
       }
       for( var caseIndex=editor.app.testSuite.tests.length-1; caseIndex>=0; caseIndex-- ) {
-          if( editor.app.testSuite.tests[caseIndex].content===givenTestCase ) {
+          // If you loaded a test suite: Before the first run of a command from a test case, or the first switch to that test case, the test case, that test case's .content field is not set yet. Hence the following checks it before comparing to givenTestCase.
+          if( 'content' in editor.app.testSuite.tests[caseIndex] && editor.app.testSuite.tests[caseIndex].content===givenTestCase ) {
               break;
           }
       }
