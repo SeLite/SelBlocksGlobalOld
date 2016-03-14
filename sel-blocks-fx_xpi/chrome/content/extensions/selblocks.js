@@ -1737,8 +1737,8 @@ var expandStoredVars;
   
   /** 'Synchronous' - i.e. for Javascript that is invoked from a Selenese script that is already running (via getEval or via custom Selenese command). It runs SelBlocks Global 'call' command for given Selenese function *after* the current Selenese command (i.e. getVal or custom Selenese command) finishes.
    * */
-  Selenium.prototype.callBack= function callBack( funcName, argSpec, onSuccess, onFailure ) {
-      this.doCall( funcName, argSpec, /*invokedFromJavascript*/true, onSuccess, onFailure );
+  Selenium.prototype.callBack= function callBack( funcName, argSpec ) {
+      this.doCall( funcName, argSpec, /*invokedFromJavascript*/true );
   };
   
   /** 'Asynchronous'- i.e. for Javascript invoked through e.g. SeLite Preview after a Selenese run finished. */
