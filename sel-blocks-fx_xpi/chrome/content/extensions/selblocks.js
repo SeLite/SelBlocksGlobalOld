@@ -2237,7 +2237,7 @@ var expandStoredVars;
     }
     return filepath;
   };
-
+  Selenium.urlFor= urlFor;
 
   // ==================== File Reader ====================
   // Adapted from the include4ide plugin
