@@ -2260,7 +2260,6 @@ var expandStoredVars;
     }
     return filepath;
   };
-  debugger;
   Selenium.urlFor= urlFor;
 
   // ==================== File Reader ====================
