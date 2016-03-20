@@ -2224,19 +2224,43 @@ var expandStoredVars;
       var json = uneval(obj);
       return json.substring(1, json.length-1);
   };
-    
-  var urlFor= function urlFor(filepath) {
+  
+  /** Match an absolute filepath, after any backslashes \ were converted to forward slashes /. */
+  var absoluteFilePathPrefix= /^(\/|\/?[a-z]:\/)/i;
+  
+  /** Convert a filepath to URL. If filepath doesn't start with http or file://, then treat it as a filepath. If it's not an absolute filepath (i.e. not starting with /, [a-z]:\ or /[a-z]:\), then convert it to absolute. Convert directory separators / or \ as appropriate.
+   * @param {boolean} [relativeToTestSuite=false] If true, then require SeLite Settings and treat filepath as relative to test suite. Otherwise treat it as relative to test case (classic SelBlocks behaviour).
+   * @TODO consider making it work as if always relativeToTestSuite=true
+   * */
+  var urlFor= function urlFor( filepath, relativeToTestSuite=false ) {
     if (filepath.indexOf("http") == 0) {
       return filepath;
     }
+    filepath= filepath.replace("\\", "/", "g");
     var URL_PFX = "file://";
     if (filepath.substring(0, URL_PFX.length).toLowerCase() !== URL_PFX) {
-      var testCasePath = testCase.file.path.replace("\\", "/", "g");
-      var i = testCasePath.lastIndexOf("/");
-      filepath = URL_PFX + testCasePath.substr(0, i) + "/" + filepath;
+      if( filepath.match(absoluteFilePathPrefix) ) {
+          if( filepath[0]!=='/' ) { // Matching /^[a-z]:/i
+              filepath= '/' +filepath;
+          }
+          return URL_PFX+ filepath;
+      }
+      else {
+        var relativeToFolder;
+        if( relativeToTestSuite ) {
+            relativeToFolder= SeLiteSettings.getTestSuiteFolder();
+        }
+        else {
+            relativeToFolder= testCase.file.path.replace("\\", "/", "g");
+            var i = relativeToFolder.lastIndexOf("/");
+            relativeToFolder= relativeToFolder.substr(0, i);
+        }
+        filepath = URL_PFX +relativeToFolder + "/" + filepath;
+      }
     }
     return filepath;
   };
+  debugger;
   Selenium.urlFor= urlFor;
 
   // ==================== File Reader ====================
