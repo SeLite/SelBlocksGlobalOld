@@ -1398,13 +1398,22 @@ var expandStoredVars;
           loop.initStmt = specs[0];
           loop.condExpr = specs[1];
           loop.iterStmt = specs[2];
-          var localVarNames = parseVarNames(loop.initStmt);
-          $$.LOG.debug("localVarNames: " + localVarNames.join(','));
-          for( var i=0; i<localVarNames.length; i++ ) { //@TODO  for(.. of..) loop once NetBeans support it.
-              var variableName= localVarNames[i];
-              variableName.length>1 && variableName[0]==='$' || notifyFatal( 'For loop ' +(i+1)+ 'th variable name must start with $ and have at least one character right of $.' );
-              validateName( variableName.substring(1), 'For loop ' +(i+1)+ 'th variable name' );
+          
+          var localVarNames = [];
+          // Part of the following comes from classic SelBlocks' parseVarNames(), which was removed in SelBlocksGlobal.
+          if (loop.initStmt) {
+            var vInits = iexpr.splitList( loop.initStmt, "," );
+            for ( var i = 0; i < vInits.length; i++) { //@TODO  for(.. of..) loop once NetBeans support it.
+              var vInit = iexpr.splitList( vInits[i], "=" );
+              var variableName= vInit[0];
+              variableName.length>1 && variableName[0]==='$' || notifyFatal( "For loop's "+(i+1)+ 'th variable name must start with $ and have at least one character right of $.' );
+              variableName= variableName.substring( 1 ); // Remove the leading dollar $
+              validateName( variableName, 'For loop ' +(i+1)+ 'th variable name' );
+              localVarNames.push( variableName );
+            }
           }
+          
+          $$.LOG.debug("localVarNames: " + localVarNames.join(','));
           return localVarNames;
       }
       ,function doForInitialize(loop) { self.evalWithExpandedStoredVars(loop.initStmt); }          // initialize
@@ -1415,20 +1424,6 @@ var expandStoredVars;
   Selenium.prototype.doEndFor = function endFor() {
     iterateLoop();
   };
-
-  var parseVarNames= function parseVarNames(initStmt) {
-    var varNames = [];
-    if (initStmt) {
-      var vInits = iexpr.splitList(initStmt, ",");
-      var i;
-      for (i = 0; i < vInits.length; i++) {
-        var vInit = iexpr.splitList(vInits[i], "=");
-        varNames.push(vInit[0]);
-      }
-    }
-    return varNames;
-  };
-  
   // ================================================================================
   Selenium.prototype.doForeach = function doForeach(varName, valueExpr)
   {
