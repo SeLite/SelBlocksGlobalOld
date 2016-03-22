@@ -43,5 +43,5 @@
       }
   };
   
-  // Original SelBlocks had handleAsTryBlock() here, but SelBlocks Global uses testLoopResumeHandleFailedResult() and testLoopResumeHandleError() instead. See editor.testLoopResume() in SeLite TestCase Debug Context.
+  // Classic SelBlocks had handleAsTryBlock() here, but SelBlocks Global uses testLoopResumeHandleFailedResult() and testLoopResumeHandleError() instead. See editor.testLoopResume() in SeLite TestCase Debug Context.
 }(selblocks));

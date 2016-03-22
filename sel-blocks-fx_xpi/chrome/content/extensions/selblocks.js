@@ -398,7 +398,7 @@ var expandStoredVars;
         // @TODO change to use 'this' instead of 'blkDefs' - it will be clearer.
         blkDefs[i] = attrs;
         blkDefs[i].idx = i;
-        // Following line is from original SelBlocks, here just for documentation
+        // Following line is from classic SelBlocks, here just for documentation
         //blkDefs[i].cmdName = testCase.commands[i].command;
         blkDefs[i].cmdName = localCase(i).commands[ localIdx(i) ].command.trimLeft(); // trimLeft() is for commands indented with whitespace (when using SeLite ClipboardAndIndent)
         return blkDefs[i];
@@ -639,7 +639,7 @@ var expandStoredVars;
     
     // SelBlocksGlobal: Following loop variable commandIndex was renamed from 'i' in SelBlocks.
     // I set variable 'i' to globIdx() value of commandIndex (i.e. of the original intended value of 'i'). This way
-    // the original SelBlocks code still uses variable 'i', so there are less merge conflicts.
+    // the classic SelBlocks code still uses variable 'i', so there are less merge conflicts.
     var commandIndex;
     for (commandIndex = 0; commandIndex < testCase.commands.length; commandIndex++)
     {
@@ -1421,8 +1421,8 @@ var expandStoredVars;
       ,function doForIterate(loop) { self.evalWithExpandedStoredVars(loop.iterStmt); }          // iterate
     );
   };
-  Selenium.prototype.doEndFor = function endFor() {
-    iterateLoop();
+  Selenium.prototype.doEndFor = function doEndFor() {
+    iterateLoop( true );
   };
   // ================================================================================
   Selenium.prototype.doForeach = function doForeach(varName, valueExpr)
@@ -1580,13 +1580,13 @@ var expandStoredVars;
     }
     // else continue into body of loop
   };
-  var iterateLoop= function iterateLoop()
+  var iterateLoop= function iterateLoop( dontRestoreVars=false )
   {
     assertRunning();
     assertActiveScope(blkDefHere().beginIdx);
     var loopState = activeBlockStack().top();
     if (loopState.isComplete) {
-      restoreVarState(loopState.savedVars);
+      dontRestoreVars || restoreVarState(loopState.savedVars);
       activeBlockStack().pop();
       // done, fall out of loop
     }
@@ -1831,7 +1831,7 @@ var expandStoredVars;
       return;
     }
     // intercept command processing and simply stop test execution instead of executing the next command
-    //Following has same effect as intercepting "resume" on editor.selDebugger.runner.IDETestLoop.prototype. Original SelBlocks overrode it on $$.seleniumTestRunner.currentTest, but that is not available here.
+    //Following has same effect as intercepting "resume" on editor.selDebugger.runner.IDETestLoop.prototype. Classic SelBlocks overrode it on $$.seleniumTestRunner.currentTest, but that is not available here.
     $$.fn.interceptOnce(editor.selDebugger.runner.currentTest, "resume", $$.handleAsExitTest);
   };
 
@@ -1866,7 +1866,7 @@ var expandStoredVars;
     var args = {};
     // See preprocessParameter() in this file. It implements http://selite.github.io/EnhancedSelenese.
     // Split argSpec if it is in format fieldA=valueA,fieldB=..<>...<>,fieldC=..<>..<>,..
-    // @TODO Also support commas within '' or ""? A workaround is to use EnhancedSelenese.
+    // @TODO Also support commas within '' or ""?
     // original from SelBlocks:
     var parms = iexpr.splitList(argSpec, ",");
     // var parms = argSpec.split(","); //before SelBlocks 2
