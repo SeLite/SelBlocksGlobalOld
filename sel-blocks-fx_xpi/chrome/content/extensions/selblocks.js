@@ -2243,7 +2243,7 @@ var expandStoredVars;
       else {
         var relativeToFolder;
         if( relativeToTestSuite ) {
-            relativeToFolder= SeLiteSettings.getTestSuiteFolder();
+            relativeToFolder= SeLiteSettings.getTestSuiteFolder().replace("\\", "/", "g");
         }
         else {
             relativeToFolder= testCase.file.path.replace("\\", "/", "g");
