@@ -473,12 +473,12 @@ var expandStoredVars;
   // Other differences to SelBlocks: no support for onServer; no return value.
   var nextCommand= function nextCommand() {
     if( testCase.calledFromAsync ) {
-        LOG.warn( 'nextCommand: testCase.calledFromAsync' );
-        assert( !this.started, "When using callFromAsync(), the test case must not have started yet." );
+        LOG.debug( 'nextCommand: testCase.calledFromAsync' );
+        assert( !this.started, "When using callFromAsync(), the test case must have ended - either by the last Selenese command, or by exitTest command." );
         this.started = true;
         assert( branchIdx===null, "branchIdx should be null when invoking Selenese from Javascript, but it's: " +branchIdx );
         // The following means that nextCommand() has a big side-effect of actually running doCall().
-        LOG.warn( 'nextCommand() invoking doCall()');
+        LOG.debug( 'nextCommand() invoking doCall()');
         selenium.doCall( testCase.calledFromAsync.functionName, testCase.calledFromAsync.seleneseParameters, /*invokedFromJavascript*/true, testCase.calledFromAsync.onSuccess, testCase.calledFromAsync.onFailure, /*callFromAsync*/true );
         delete testCase['calledFromAsync'];
     }
@@ -1216,13 +1216,16 @@ var expandStoredVars;
   };
   
   // SelBlocksGlobal:
-  var restoreCallFrame= function restoreCallFrame( callFrame ) {
+  /** @param {object} callFrame
+   *  @param {bool} [ignoreReturnIdx=false] If true, then this doesn't expect & doesn't process callFrame.returnIdx. To be used in returnFromFunction for frameFromAsync.
+   * */
+  var restoreCallFrame= function restoreCallFrame( callFrame, ignoreReturnIdx=false ) {
       var _result= storedVars._result;
       storedVars= callFrame.savedVars;
       storedVars._result= _result;
       testCase= callFrame.testCase;
       testCase.debugContext.testCase= testCase;
-      testCase.debugContext.debugIndex = localIdx( callFrame.returnIdx );
+      ignoreReturnIdx || (testCase.debugContext.debugIndex= localIdx( callFrame.returnIdx ) );
       restoreVarState(callFrame.savedVars);
   };
   
@@ -1734,7 +1737,7 @@ var expandStoredVars;
    * @param {string} seleneseFunctionName Selenese function name.
    * @param {string|object} seleneseParameters Selenese function parameters. See doCall().
    * */
-  Selenium.prototype.callBack= function callBack( seleneseFunctionName, seleneseParameters ) {
+  Selenium.prototype.callBack= function callBack( seleneseFunctionName, seleneseParameters={} ) {
       this.doCall( seleneseFunctionName, seleneseParameters, /*invokedFromJavascript*/true );
   };
   
@@ -1784,7 +1787,7 @@ var expandStoredVars;
   };
 
   Selenium.prototype.returnFromFunction= function returnFromFunction(funcName, returnVal)
-  {
+  {debugger;
     assertRunning();
     if (this.transitionBubbling(Stack.isFunctionBlock)) {
       return;
@@ -1800,31 +1803,28 @@ var expandStoredVars;
             ? returnVal // Enable returning objects via SeLite EnhancedSelenese notation
             : this.evalWithExpandedStoredVars(returnVal);
       }
-      activeCallFrame.isReturning = true;
       
       // jump back to call command
       if( !activeCallFrame.invokedFromJavascript ) { // See a comment in doCall()
+        activeCallFrame.isReturning = true;
+      }
+      if( !activeCallFrame.invokedFromJavascript || !activeCallFrame.frameFromAsync ) {
         setNextCommand(activeCallFrame.returnIdx);
         // Don't callStack.pop() here - doCall() does it instead (in its second run)
       }
-      else {
+      if( activeCallFrame.invokedFromJavascript ) {
           LOG.debug('returnFromFunction: invokedFromJavascript; frameFromAsync: ' +activeCallFrame.frameFromAsync);
           //setNextCommand( activeCallFrame.branchIdx ); This failed when branchIdx wasn't set yet
           // When using invokedFromJavascript, then the flow control doesn't go to a separate invoker 'call' Selenese command,
           // since there wasn't any. Hence we handle the stack here.
           testCase= activeCallFrame.testCase;
           testCase.debugContext.debugIndex= activeCallFrame.debugIndex;
-          if( activeCallFrame.frameFromAsync ) {
-            editor.selDebugger.runner.currentTest.commandComplete= () => {};
-            !activeCallFrame.onSuccess || window.setTimeout( ()=>activeCallFrame.onSuccess(), 0 );
-            $$.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", $$.handleAsExitTest);
-            this.invokedFromAsync= false;
-          }
-          else {
-            setNextCommand( activeCallFrame.returnIdx );              
-          }
+          editor.selDebugger.runner.currentTest.commandComplete= () => {};
+          !activeCallFrame.onSuccess || window.setTimeout( ()=>activeCallFrame.onSuccess(), 0 );
+          $$.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", $$.handleAsExitTest);
+          this.invokedFromAsync= false;
           LOG.debug( 'returnFromFunction: pop callStack');
-          callStack.pop();
+          restoreCallFrame( callStack.pop(), activeCallFrame.frameFromAsync );
       }
     }
   };
