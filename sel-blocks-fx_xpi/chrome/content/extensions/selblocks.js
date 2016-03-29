@@ -1637,7 +1637,7 @@ var expandStoredVars;
   /** Note: See also ThirdPartyIssues.md > https://github.com/SeleniumHQ/selenium/issues/1635
    * If callFromAsync, then either onSuccess or onFailure will be called on success or failure, respectively. It will be invoked asynchronously, *after* returning back to Javascript caller (i.e. to a non-Selenese layer that invoked this doCall()).
    * @param {string} funcName
-   * @param {string} argSpec Comma-separated assignments of Selenese parameters. See reference.xml.
+   * @param {string|object} argSpec Comma-separated assignments of Selenese function parameters. Or an object (easily passed within =<>...<> as per http://selite.github.io/EnhancedSelenese) - then its fields define the Selenese function parameters. See reference.xml.
    * @param {boolean} [invokedFromJavascript=false] Whether invoked from Javascript (rather than directly from Selenese)
    * @param {function} [onSuccess] Callback function. Only used if invokedFromJavascript==true.
    * @param {function} [onFailure] Callback function. Only used if invokedFromJavascript==true.
@@ -1675,7 +1675,7 @@ var expandStoredVars;
       var args;
       if( typeof argSpec==='object' ) {
         !( 'seLiteExtra' in argSpec ) || SeLiteMisc.fail( "Don't use @<>...<> with Selenese call command." );
-        // Parameters were passed in an object within =<>...<> as per http://selite.github.io/EnhancedSelenese.
+        // Parameters were passed in an object.
         args= argSpec;
       }
       else {
@@ -1731,12 +1731,17 @@ var expandStoredVars;
   };
   
   /** 'Synchronous' - i.e. for Javascript that is invoked from a Selenese script that is already running (via getEval or via custom Selenese command). It runs SelBlocks Global 'call' command for given Selenese function *after* the current Selenese command (i.e. getVal or custom Selenese command) finishes.
+   * @param {string} seleneseFunctionName Selenese function name.
+   * @param {string|object} seleneseParameters Selenese function parameters. See doCall().
    * */
-  Selenium.prototype.callBack= function callBack( funcName, argSpec ) {
-      this.doCall( funcName, argSpec, /*invokedFromJavascript*/true );
+  Selenium.prototype.callBack= function callBack( seleneseFunctionName, seleneseParameters ) {
+      this.doCall( seleneseFunctionName, seleneseParameters, /*invokedFromJavascript*/true );
   };
   
-  /** 'Asynchronous'- i.e. for Javascript invoked through e.g. SeLite Preview after a Selenese run finished. */
+  /** 'Asynchronous'- i.e. for Javascript invoked through e.g. SeLite Preview after a Selenese run finished.
+   * @param {string} seleneseFunctionName Selenese function name.
+   * @param {string|object} seleneseParameters Selenese function parameters. See doCall().
+   */
   Selenium.prototype.callFromAsync= function callFromAsync( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
