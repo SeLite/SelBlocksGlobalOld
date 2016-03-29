@@ -277,8 +277,9 @@ var expandStoredVars;
           throw new Error(msg);
       }
       var result= afterSlashNumber.valueOf();
-      //"TODO:"
-      if( result<0 || result>=editor.app.testSuite.tests[localCaseIdxPart(globIdxValue)].content.commands.length ) {
+      //TODO is the following same as testCases[ local... ].commands.length?
+      //"TODO:"??
+      if( result<0 || result>=editor.app.testSuite.tests[ localCaseIdxPart(globIdxValue) ].content.commands.length ) {
           var msg= 'In localIdx("' +globIdxValue+ '"), result ' +result+ ' is not a valid command index';
           LOG.error( msg );
           throw new Error(msg);
@@ -517,9 +518,8 @@ var expandStoredVars;
   var setNextCommand= function setNextCommand(cmdIdx) {
     var idx= localIdx(cmdIdx);
     var localTestCase= localCase(cmdIdx);
+    // localIdx() already validated cmdIdx to be within the range of its test case's commands; hence here we're skipping the duplicate validation from classic SelBlocks.
     // When compared to SelBlocks, the following doesn't use cmdIdx+1, because the original nextCommand() will increase this.debugIndex by 1 when invoked below
-    assert( idx>=0 && idx< localTestCase.commands.length,
-      " Cannot branch to non-existent command @" +cmdIdx );
     branchIdx = cmdIdx;
   };
 
@@ -1738,6 +1738,7 @@ var expandStoredVars;
    * @param {string|object} seleneseParameters Selenese function parameters. See doCall().
    * */
   Selenium.prototype.callBack= function callBack( seleneseFunctionName, seleneseParameters={} ) {
+      localIdxHere()+1<testCase.commands.length || SeLiteMisc.fail( "Do not invoke selenium.callBack() from the very last command if a test case." );
       this.doCall( seleneseFunctionName, seleneseParameters, /*invokedFromJavascript*/true );
   };
   
