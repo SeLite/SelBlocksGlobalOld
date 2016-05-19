@@ -12,39 +12,6 @@
 <tr><td rowspan="1" colspan="3">eval</td></tr>
 </thead><tbody>
 <!--== javascript extensions-->
-<!----- isOneOf()-->
-<tr>
-	<td>verifyEval</td>
-	<td>&quot;dilbert&quot;.isOneOf(&quot;dilbert&quot;,&quot;dogbert&quot;,&quot;mordac&quot;)</td>
-	<td>true</td>
-</tr>
-<tr>
-	<td>verifyEval</td>
-	<td>&quot;bob&quot;.isOneOf(&quot;dilbert&quot;,&quot;dogbert&quot;,&quot;mordac&quot;)</td>
-	<td>false</td>
-</tr>
-<!----- mapTo()-->
-<tr>
-	<td>verifyEval</td>
-	<td>&quot;red&quot;.mapTo(&quot;primary&quot;, [&quot;red&quot;,&quot;green&quot;,&quot;blue&quot;])</td>
-	<td>primary</td>
-</tr>
-<tr>
-	<td>verifyEval</td>
-	<td>&quot;orange&quot;.mapTo(&quot;primary&quot;, [&quot;red&quot;,&quot;green&quot;,&quot;blue&quot;])</td>
-	<td>o,r,a,n,g,e</td>
-</tr>
-<!----- translate()-->
-<tr>
-	<td>verifyEval</td>
-	<td>&quot;red&quot;.translate(&quot;e&quot;, &quot;E&quot;)</td>
-	<td>rEd</td>
-</tr>
-<tr>
-	<td>verifyEval</td>
-	<td>&quot;red&quot;.translate([&quot;red&quot;, &quot;green&quot;, &quot;blue&quot;], [&quot;blue&quot;, &quot;red&quot;, &quot;green&quot;])</td>
-	<td>blue</td>
-</tr>
 <!--== branching-->
 <tr>
 	<td>skipNext</td>

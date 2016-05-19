@@ -108,25 +108,10 @@ var expandStoredVars;
   // EXTENSION REVIEWERS:
   // Global functions are intentional features provided for use by end user's in their Selenium scripts.
 
-  // eg: "dilbert".isOneOf("dilbert","dogbert","mordac") => true
-  String.prototype.isOneOf = function isOneOf(valuesObj)
-  {
-    var values = valuesObj;
-    if (!Array.isArray(values)) {
-      // copy function arguments into an array
-      values = Array.prototype.slice.call(arguments);
-    }
-    var i;
-    for (i = 0; i < this.length; i++) {
-      if (values[i]===this) {
-        return true;
-      }
-    }
-    return false;
-  };
+  //SelBlocksGlobal removed isOneOf|mapTo|translate. Instead of string.isOneOf(first, second...), use [first, second...].indexOf(string)<0.
 
   // eg: "red".mapTo("primary", ["red","green","blue"]) => primary
-  String.prototype.mapTo = function mapTo(/* pairs of: string, array */)
+  /*String.prototype.mapTo = function mapTo()// TODO string parameter; then pairs of: string, array
   {
     var errMsg = " The map function requires pairs of argument: string, array";
     assert(arguments.length % 2 === 0, errMsg + "; found " + arguments.length);
@@ -134,7 +119,7 @@ var expandStoredVars;
     for (i = 0; i < arguments.length; i += 2) {
       assert((typeof arguments[i].toLowerCase() === "string") && Array.isArray(arguments[i+1]),
         errMsg + "; found " + typeof arguments[i] + ", " + typeof arguments[i+1]);
-      if (this.isOneOf(arguments[i+1])) {
+      if ( this.isOneOf(arguments[i+1]) ) {
         return arguments[i];
       }
     }
@@ -176,7 +161,7 @@ var expandStoredVars;
       assert(false, "translate() function requires arguments of type String or Array");
     }
     return null;
-  };
+  };*/
 
   // ----- SelBlocksGlobal:
     /** @param {object} givenTestCase TestCase optional

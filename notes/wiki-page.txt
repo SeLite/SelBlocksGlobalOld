@@ -130,10 +130,6 @@ These variables can of course be referenced by SelBlocks commands as <tt>_i</tt>
 
 These can be used in SelBlocks expressions:
 
- String.isOneOf : Example: if|employee.isOneOf("dilbert","wally","ratbert")
- String.mapTo : Example: if|employee.mapTo("peon", ["dilbert","wally"]) == "peon"
- String.translate : Example: if|employee.translate("e", "3"]) == "p3on"
-
  $e(locator) : Example: $e("link=SelBlocks review")
  $x(xpath) : Example: $x("//input[@id=(//label[.='User ID']/@for)]")
 
