@@ -1721,20 +1721,23 @@ var expandStoredVars;
   /** 'Synchronous' - i.e. for Javascript that is invoked from a Selenese script that is already running (via getEval or via custom Selenese command). It runs SelBlocks Global 'call' command for given Selenese function *after* the current Selenese command (i.e. getVal or custom Selenese command) finishes.
    * @param {string} seleneseFunctionName Selenese function name.
    * @param {string|object} seleneseParameters Selenese function parameters. See doCall().
+   * @TODO test stored var _result
    * */
-  Selenium.prototype.callBack= function callBack( seleneseFunctionName, seleneseParameters={} ) {
-      localIdxHere()+1<testCase.commands.length || SeLiteMisc.fail( "Do not invoke selenium.callBack() from the very last command if a test case." );
+  Selenium.prototype.callBackInFlow= function callBackInFlow( seleneseFunctionName, seleneseParameters={} ) {
+      localIdxHere()+1<testCase.commands.length || SeLiteMisc.fail( "Do not invoke selenium.callBackInFlow() from the very last command if a test case." );
       this.doCall( seleneseFunctionName, seleneseParameters, /*invokedFromJavascript*/true );
   };
   
   /** 'Asynchronous'- i.e. for Javascript invoked through e.g. SeLite Preview after a Selenese run finished.
    * @param {string} seleneseFunctionName Selenese function name.
    * @param {string|object} seleneseParameters Selenese function parameters. See doCall().
+   * @TODO handle return value from the Selenese function. Pass it to onSuccess(). Pass any exception to onFailure().
+   * @TODO return a Promise.
    */
-  Selenium.prototype.callFromAsync= function callFromAsync( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
+  Selenium.prototype.callBackOutFlow= function callBackOutFlow( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
-    LOG.debug('callFromAsync()');
+    LOG.debug('callBackOutFlow()');
     testCase.calledFromAsync= {
         functionName: seleneseFunctionName,
         seleneseParameters,

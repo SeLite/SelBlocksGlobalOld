@@ -74,7 +74,7 @@
 <!-- --- -->
 <tr>
 	<td>getEval</td>
-	<td>selenium.callBack( 'func', '' )</td>
+	<td>selenium.callBackInFlow( 'func', '' )</td>
 	<td></td>
 </tr>
 <!-- --- -->
@@ -85,7 +85,7 @@
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
-	<td>selenium.callBack( 'func', 'shouldFail=&quot;first failure&quot;' )</td>
+	<td>selenium.callBackInFlow( 'func', 'shouldFail=&quot;first failure&quot;' )</td>
 	<td></td>
 </tr>
 <tr>
@@ -117,7 +117,7 @@
 <!-- --- -->
 <tr>
 	<td>getEval</td>
-	<td>setTimeout( ()=&gt;{selenium.callFromAsync( 'func', 'shouldFail=true', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td>setTimeout( ()=&gt;{selenium.callBackOutFlow( 'func', 'shouldFail=true', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
 	<td></td>
 </tr>
 <!--TODO Keep, chain:-->
@@ -128,7 +128,7 @@
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
-	<td>setTimeout( ()=&gt;{selenium.callFromAsync( 'func', 'shouldFail=false', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td>setTimeout( ()=&gt;{selenium.callBackOutFlow( 'func', 'shouldFail=false', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
 	<td></td>
 </tr>
 <tr>
