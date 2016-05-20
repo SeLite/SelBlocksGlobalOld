@@ -1731,24 +1731,25 @@ var expandStoredVars;
   /** 'Asynchronous'- i.e. for Javascript invoked through e.g. SeLite Preview after a Selenese run finished.
    * @param {string} seleneseFunctionName Selenese function name.
    * @param {string|object} seleneseParameters Selenese function parameters. See doCall().
-   * @TODO handle return value from the Selenese function. Pass it to onSuccess(). Pass any exception to onFailure().
-   * @TODO return a Promise.
+   * @return {Promise} A Promise object that will receive a Selenese return value on success, or an exception on failure. (It will be called after the Selenese run flow finished - i.e. through window.setTimeout().)
    */
-  Selenium.prototype.callBackOutFlow= function callBackOutFlow( seleneseFunctionName, seleneseParameters='', onSuccess, onFailure ) {
+  Selenium.prototype.callBackOutFlow= function callBackOutFlow( seleneseFunctionName, seleneseParameters='') {
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
     LOG.debug('callBackOutFlow()');
-    testCase.calledFromAsync= {
-        functionName: seleneseFunctionName,
-        seleneseParameters,
-        onSuccess,
-        onFailure
-    };
-    
-    editor.suiteTreeView.currentTestCase==testCase || editor.suiteTreeView.testCaseChanged( testCase );
-    // Following increases The Runs/Failures count by 1, rather than resetting it. This code depends on Selenium internals.
-    // Following invokes nextCommand(), which then uses the fields set on testCase above. It also validates that there is no test being run already.
-    editor.playCurrentTestCase( false, editor.testSuiteProgress.runs, editor.testSuiteProgress.total+1 );
+    return new Promise( (resolve, reject)=>{
+        testCase.calledFromAsync= {
+            functionName: seleneseFunctionName,
+            seleneseParameters,
+            onSuccess: resolve,
+            onFailure: reject
+        };
+
+        editor.suiteTreeView.currentTestCase==testCase || editor.app.notify( 'testCaseChanged', testCase );
+        // Following increases The Runs/Failures count by 1, rather than resetting it. This code depends on Selenium internals.
+        // Following invokes nextCommand(), which then uses the fields set on testCase above. It also validates that there is no test being run already.
+        editor.playCurrentTestCase( false, editor.testSuiteProgress.runs, editor.testSuiteProgress.total+1 );
+    } );
   };
   
   Selenium.prototype.doFunction = function doFunction(funcName)
@@ -1809,7 +1810,7 @@ var expandStoredVars;
           testCase= activeCallFrame.testCase;
           testCase.debugContext.debugIndex= activeCallFrame.debugIndex;
           editor.selDebugger.runner.currentTest.commandComplete= () => {};
-          !activeCallFrame.onSuccess || window.setTimeout( ()=>activeCallFrame.onSuccess(), 0 );
+          !activeCallFrame.onSuccess || window.setTimeout( ()=>activeCallFrame.onSuccess(storedVars._result), 0 );
           $$.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", $$.handleAsExitTest);
           this.invokedFromAsync= false;
           LOG.debug( 'returnFromFunction: pop callStack');

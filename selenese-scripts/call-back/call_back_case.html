@@ -117,7 +117,7 @@
 <!-- --- -->
 <tr>
 	<td>getEval</td>
-	<td>setTimeout( ()=&gt;{selenium.callBackOutFlow( 'func', 'shouldFail=true', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td>setTimeout( ()=&gt;{selenium.callBackOutFlow( 'func', 'shouldFail=true').then( ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS: ' +exc) ); }, 600 )</td>
 	<td></td>
 </tr>
 <!--TODO Keep, chain:-->
@@ -128,7 +128,7 @@
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
-	<td>setTimeout( ()=&gt;{selenium.callBackOutFlow( 'func', 'shouldFail=false', ()=&gt;alert('success from JS'), (exc)=&gt;alert('failure from JS') ); }, 600 )</td>
+	<td>setTimeout( ()=&gt;{selenium.callBackOutFlow( 'func', 'shouldFail=false').then( (value)=&gt;alert('success from JS: ' +value), (exc)=&gt;alert('failure from JS: ' +exc) ); }, 600 )</td>
 	<td></td>
 </tr>
 <tr>
