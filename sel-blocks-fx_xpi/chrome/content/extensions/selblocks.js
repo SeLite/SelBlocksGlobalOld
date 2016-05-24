@@ -945,19 +945,29 @@ var expandStoredVars;
   };
 
   // ================================================================================
-  Selenium.prototype.doIf = function doIf(condExpr)
+  /* Some control flow commands have Promise-based and non-Promise-based alternatives. Their common implementation is in Selenium.prototype.actionXyz(). Technically Selenium.prototype.actionXyz could be the same as Selenium.prototype.doXyz with an optional second parameter 'withPromise'. However, a user could call action 'xyz' with a second Selenese parameter by mistake, and this would not report it. Hence this separation, which enables more precise validation.
+   */
+  Selenium.prototype.actionIf = function actionIf(condExpr, withPromise=false)
   {
     assertRunning();
     var ifDef = blkDefHere();
-    var ifState = { idx: idxHere(), elseIfItr: arrayIterator(ifDef.elseIfIdxs) };
+    var ifState = { idx: idxHere(), elseIfItr: arrayIterator(ifDef.elseIfIdxs), withPromise };
     activeBlockStack().push(ifState);
     this.cascadeElseIf(ifState, condExpr);
   };
-  Selenium.prototype.doElseIf = function doElseIf(condExpr)
+  Selenium.prototype.doIf = function doIf(condExpr) {
+      this.actionIf( condExpr );
+  };
+  Selenium.prototype.doIfPromise = function doIfPromise(condExpr) {
+      this.actionIf( condExpr, true );
+  };
+  
+  Selenium.prototype.actionElseIf = function actionElseIf(condExpr, withPromise=false)
   {
     assertRunning();
     assertActiveScope(blkDefHere().ifIdx);
     var ifState = activeBlockStack().top();
+    ifState.withPromise===withPromise || SeLiteMisc.fail( "Please use 'if' with 'elseIf' and 'ifPromise' with 'elseIfPromise'." );
     if (ifState.skipElseBlocks) { // if, or previous elseIf, has already been met
       setNextCommand(blkDefAt(blkDefHere().ifIdx).endIdx);
     }
@@ -965,23 +975,46 @@ var expandStoredVars;
       this.cascadeElseIf(ifState, condExpr);
     }
   };
-  Selenium.prototype.doElse = function doElse()
+  Selenium.prototype.doElseIf = function doElseIf(condExpr) {
+      this.actionElseIf( condExpr );
+  };
+  Selenium.prototype.doElseIfPromise= function doElseIfPromise( condExpr ) {
+      this.actionElseIf( condExpr, true );
+  };
+  
+  Selenium.prototype.actionElse = function actionElse( withPromise=false )
   {
     assertRunning();
     assertActiveScope(blkDefHere().ifIdx);
     var ifState = activeBlockStack().top();
+    ifState.withPromise===withPromise || SeLiteMisc.fail( "Please use 'if' with 'else' and 'ifPromise' with 'elsePromise'." );
     if (ifState.skipElseBlocks) { // if, or previous elseIf, has already been met
       setNextCommand(blkDefHere().endIdx);
     }
     // else continue into else-block
   };
-  Selenium.prototype.doEndIf = function doEndIf() {
+  Selenium.prototype.doElse = function doElse() {
+      this.actionElse();
+  };
+  Selenium.prototype.doElsePromise = function doElsePromise() {
+      this.actionElse( true );
+  };
+  
+  Selenium.prototype.actionEndIf = function actionEndIf( withPromise=false ) {
     assertRunning();
     assertActiveScope(blkDefHere().ifIdx);
+    var ifState = activeBlockStack().top();
+    ifState.withPromise===withPromise || SeLiteMisc.fail( "Please use 'if' with 'endIf' and 'ifPromise' with 'endIfPromise'." );
     activeBlockStack().pop();
     // fall out of if-endIf
   };
-
+  Selenium.prototype.doEndIf = function doEndIf() {
+      this.actionEndIf();
+  };
+  Selenium.prototype.doEndIfPromise = function doEndIfPromise() {
+      this.actionEndIf( true );
+  };
+  
   Selenium.prototype.cascadeElseIf= function cascadeElseIf(ifState, condExpr) {
     this.assertCompilable("", condExpr, ";", "Invalid condition");
     if (!this.evalWithExpandedStoredVars(condExpr)) {
@@ -2467,7 +2500,9 @@ var expandStoredVars;
         }
     };
     
-    var ensureScriptIsNotObject= function ensureScriptIsNotObject( script ) {
+    var originalGetEval= Selenium.prototype.getEval;
+    Selenium.prototype.getEval = function getEval(script) {
+        // Parameter script should be a primitive string. If it is an object, it is a result of exactly one expression within <>...<> (with no prefix & postfix) yeilding an object, or a result of @<>...<> (with an optional prefix/postfix) as processed by Selenium.prototype.preprocessParameter() as overriden by SelBlocksGlobal. Such parameters should not be used with getEval.
         if( typeof script==='object' ) {
             var msg= "You must call getEval/getEvalPromise (and their derivatives such as storeEval/storeEvalPromise) with a primitive (non-object) string in Target parameter.";
             msg+= script.seLiteExtra!==undefined
@@ -2476,12 +2511,6 @@ var expandStoredVars;
             msg+= " See http://selite.github.io/EnhancedSelenese"
             SeLiteMisc.fail( msg );
         }
-    };
-    
-    var originalGetEval= Selenium.prototype.getEval;
-    Selenium.prototype.getEval = function getEval(script) {
-        // Parameter script should be a primitive string. If it is an object, it is a result of exactly one expression within <>...<> (with no prefix & postfix) yeilding an object, or a result of @<>...<> (with an optional prefix/postfix) as processed by Selenium.prototype.preprocessParameter() as overriden by SelBlocksGlobal. Such parameters should not be used with getEval.
-        ensureScriptIsNotObject( script );
         return originalGetEval.call( this, expandStoredVars(script) );
     };
     
@@ -2514,7 +2543,7 @@ var expandStoredVars;
         };
     };/**/
     
-    Selenium.prototype.doStorePromise= function doStorePromise( script, variableName ) {
+    Selenium.prototype.actionStorePromise= function actionStorePromise( script, variableName ) {
         var promise= this.getEval( script );
         if( !promise || !('then' in promise) ) {
             throw new SeleniumError( "Evaluated script: " +script+ "\nIt didn't result into a Promise, neither into an object having .then() method. Instead, it returned: " + promise );
@@ -2540,5 +2569,12 @@ var expandStoredVars;
             },
             this.defaultTimeout
         );
+    };
+    
+    Selenium.prototype.doStorePromise= function doStorePromise( script, variableName ) {
+        return this.actionStorePromise( script, variableName );
+    };
+    Selenium.prototype.doPromise= function doPromise( script ) {
+        return this.actionStorePromise( script );
     };
 })();
