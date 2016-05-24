@@ -662,21 +662,31 @@ var expandStoredVars;
           case "elseIf":
           case "elseIfPromise"://@TODO
             assertNotAndWaitSuffix(i);
-            assertBlockIsPending(lexStack, "elseIf", i, ", is not valid outside of an if/endIf block");
+            assertBlockIsPending(lexStack, curCmd, i, ", is not valid outside of an if/endIf block");
             ifDef = lexStack.top();
-            assertMatching(ifDef.cmdName, "if", i, ifDef.idx);
+            assertMatching( ifDef.cmdName,
+                curCmd==="elseIf"
+                ? "if"
+                : "ifPromise",
+                i,
+                ifDef.idx
+            );
             var eIdx = blkDefFor(ifDef).elseIdx;
             if (eIdx) {
-              notifyFatal(fmtCmdRef(eIdx) + " An else has to come after all elseIfs.");
+              notifyFatal(fmtCmdRef(eIdx) + " An else/elsePromise has to come after all elseIf/elseIfPromise commands.");
             }
             blockDefs.init(i, { ifIdx: ifDef.idx });       // elseIf -> if
             blkDefFor(ifDef).elseIfIdxs.push(i);           // if -> elseIf(s)
             break;
           case "else":
+          case "elsePromise":
             assertNotAndWaitSuffix(i);
-            assertBlockIsPending(lexStack, "if", i, ", is not valid outside of an if/endIf block");
+            var openerCommand= curCmd==="else"
+                ? "if"
+                : "ifPromise";
+            assertBlockIsPending( lexStack, openerCommand, i, ", is not valid outside of an if/endIf block" );
             ifDef = lexStack.top();
-            assertMatching(ifDef.cmdName, "if", i, ifDef.idx);
+            assertMatching(ifDef.cmdName, openerCommand, i, ifDef.idx);
             if (blkDefFor(ifDef).elseIdx) {
               notifyFatal(fmtCmdRef(i) + " There can only be one else associated with a given if.");
             }
@@ -684,10 +694,14 @@ var expandStoredVars;
             blkDefFor(ifDef).elseIdx = i;                  // if -> else
             break;
           case "endIf":
+          case "endIfPromise":
             assertNotAndWaitSuffix(i);
-            assertBlockIsPending(lexStack, "if", i);
+            var openerCommand= curCmd==="endIf"
+                ? "if"
+                : "ifPromise";
+            assertBlockIsPending(lexStack, openerCommand, i);
             ifDef = lexStack.pop();
-            assertMatching(ifDef.cmdName, "if", i, ifDef.idx);
+            assertMatching(ifDef.cmdName, openerCommand, i, ifDef.idx);
             blockDefs.init(i, { ifIdx: ifDef.idx });       // endIf -> if
             blkDefFor(ifDef).endIdx = i;                   // if -> endif
             if (ifDef.elseIdx) {
@@ -1022,22 +1036,23 @@ var expandStoredVars;
   Selenium.prototype.cascadeElseIf= function cascadeElseIf(ifState, condExpr, withPromise=false ) {
     this.assertCompilable("", condExpr, ";", "Invalid condition");
     var promiseOrResult= this.evalWithExpandedStoredVars(condExpr);
-    
-    var handler= (value) => {
-        if( !value ) {
-          // jump to next elseIf or else or endif
-          var ifDef = blkDefFor(ifState);
-          if (ifState.elseIfItr.hasNext()) { setNextCommand(ifState.elseIfItr.next()); }
-          else if (ifDef.elseIdx)          { setNextCommand(ifDef.elseIdx); }
-          else                             { setNextCommand(ifDef.endIdx); }
-        }
-        else {
-          ifState.skipElseBlocks = true;
-          // continue into if/elseIf block
-        }
-    };
-    
-    return this.handlePotentialPromise( promiseOrResult, handler, withPromise );
+    return this.handlePotentialPromise(
+        promiseOrResult,
+        (value) => {
+            if( !value ) {
+              // jump to next elseIf or else or endif
+              var ifDef = blkDefFor(ifState);
+              if (ifState.elseIfItr.hasNext()) { setNextCommand(ifState.elseIfItr.next()); }
+              else if (ifDef.elseIdx)          { setNextCommand(ifDef.elseIdx); }
+              else                             { setNextCommand(ifDef.endIdx); }
+            }
+            else {
+              ifState.skipElseBlocks = true;
+              // continue into if/elseIf block
+            }
+        },
+        withPromise
+    );
   };
 
   // ================================================================================
