@@ -100,6 +100,8 @@ function $X(xpath, contextNode, resultType) {
   return nodes;
 }
 
+/** @type {function}
+ */
 var expandStoredVars;
 // selbocks name-space
 (function($$){
@@ -1841,13 +1843,14 @@ var expandStoredVars;
             : undefined;
         LOG.debug( 'Selenium.prototype.evalWithExpandedStoredVars(): ' +expr+ ' expanded to: ' +expanded );
         var window = this.browserbot.getCurrentWindow();
-        // Firefox eval() doesn't return values of some expression strings, including
-        // '{field: "value"}' and 'return {field: "value"}'. That's why I assign to local variable 'evalWithExpandedStoredVarsResult' first, and then I return it.
-        // I add () parenthesis, so that if the the expr contains multiple expressions separated by comma, then this uses the value of the last expression.
+        /* Firefox eval() doesn't return values of some expressions as expected, e.g.
+        // '{field: "value"}'. That's why I assign to local variable 'evalWithExpandedStoredVarsResult' first, and then I return it.
+           I add () parenthesis, so that if the the expr contains multiple expressions separated by comma, then this uses the value of the last expression.
+        */
         // EXTENSION REVIEWERS: Use of eval is consistent with the Selenium extension itself.
         // Scripted expressions run in the Selenium window, separate from browser windows.
         // Global functions are intentional features provided for use by end user's in their Selenium scripts.
-        var result = eval( "var evalWithExpandedStoredVarsResult= " +expanded+ "; evalWithExpandedStoredVarsResult" );
+        var result = eval( "var evalWithExpandedStoredVarsResult= (" +expanded+ "); evalWithExpandedStoredVarsResult" );
         LOG.debug( 'result: ' +typeof result+ ': ' +SeLiteMisc.objectToString(result, 2) );
         return result;
       }
@@ -1859,10 +1862,10 @@ var expandStoredVars;
   // This is not related to parseArgs(str) in chrome/content/selenium-core/test/RemoteRunnerTest.js
   Selenium.prototype.parseArgs= function parseArgs(argSpec) { // comma-sep -> new prop-set
     var args = {};
-    // See preprocessParameter() in this file. It implements http://selite.github.io/EnhancedSelenese.
-    // Split argSpec if it is in format fieldA=valueA,fieldB=..<>...<>,fieldC=..<>..<>,..
-    // @TODO Also support commas within '' or ""?
-    // original from SelBlocks:
+    /* See preprocessParameter() in this file. It implements http://selite.github.io/EnhancedSelenese.
+       Split argSpec if it is in format fieldA=valueA,fieldB=..<>...<>,fieldC=..<>..<>,..
+       @TODO Also support commas within '' or ""?
+       original from SelBlocks:*/
     var parms = iexpr.splitList(argSpec, ",");
     // var parms = argSpec.split(","); //before SelBlocks 2
     for (var i = 0; i < parms.length; i++) {
@@ -2390,20 +2393,22 @@ var expandStoredVars;
     // For handling =<>...<>
     var enclosedByEqualsSpecialPairs= /^=<>(((?!<>).)*)<>$/g;
     
-    // This adds support for javascript expressions enclosed with <>...<>, \<>...<> or @<>...<>
-    // as documented at http://selite.github.io/EnhancedSelenese.
-    // If the user wants to actually pass a string '<>' to the result, she or he has to work around this (e.g. by generating it in a Javascript expression).
-    // The 3rd captured group - the postfix - is guaranteed not to end with # or @  that would be just before the next occurrence of <>...<> (if any)
-    // Levels of regex. parenthesis 12  3    3 2 1  12  3    3 2 1  12  3    3          3    32 1
+    /**This adds support for javascript expressions enclosed with <>...<>, \<>...<> or @<>...<>
+       as documented at http://selite.github.io/EnhancedSelenese.
+       If the user wants to actually pass a string '<>' to the result, she or he has to work around this (e.g. by generating it in a Javascript expression).
+       The 3rd captured group - the postfix - is guaranteed not to end with # or @  that would be just before the next occurrence of <>...<> (if any)
+    Levels of regex. parenthesis 12  3    3 2 1  12  3    3 2 1  12  3    3          3    32 1
+    */
     var enclosedBySpecialPairs= /((?:(?!<>).)*)<>((?:(?!<>).)+)<>((?:(?!<>)[^#@]|[#@](?!<>))*)/g;
     
-    // A head intercept of preprocessParameter() from chrome/content/selenium-core/scripts/selenium-api.js. It implements http://selite.github.io/EnhancedSelenese.
+    /** A head intercept of preprocessParameter() from chrome/content/selenium-core/scripts/selenium-api.js. It implements http://selite.github.io/EnhancedSelenese. */
     Selenium.prototype.preprocessParameter = function selBlocksGlobalPreprocessParameter(whole) {
-        // javascript{..} doesn't replace ${variableName}.
-        // Selenese ${variableName} requires {}, which is good because it separates it from the rest of the target/value,
-        // so it's robust yet easy to use.
-        // <>...<> replaces $xxx by the symbol/reference to the stored variable, so it is typed and it doesn't need to be quoted for Javascript processing.
-        // Hence EnhancedSelenese can access stored variables, their fields/subfields and methods using $xyz.
+        /** javascript{..} doesn't replace ${variableName}.
+           Selenese ${variableName} requires {}, which is good because it separates it from the rest of the target/value,
+           so it's robust yet easy to use.
+           <>...<> replaces $xxx by the symbol/reference to the stored variable, so it is typed and it doesn't need to be quoted for Javascript processing.
+           Hence EnhancedSelenese can access stored variables, their fields/subfields and methods using $xyz.
+        */
         LOG.debug('SeLite SelBlocks Global head override of preprocessParameter(): ' +whole );
         var numberOfSpecialPairs= 0;
         for( var i=1; i<whole.length; i++ ) {
@@ -2413,12 +2418,13 @@ var expandStoredVars;
             }
         }
         numberOfSpecialPairs%2===0 || SeLiteMisc.fail( "SeLite SelBlocks Global and its http://selite.github.io/EnhancedSelenese doesn't allow Selenese parameters to contain an odd number of character pairs <>. The parameter value was: " +whole );
-        // Match <>...<>, \<>...<>, =<>...<> and @<>...<>. Replace $xx parts with respective stored variables. Evaluate. If it was \<>...<>, then escape it as an XPath string. If it was @<>...<>, then make the rest a String object (rather than a string primitive) and store the result of Javascript in field seLiteExtra on that String object.
-        // I don't replace through a callback function - e.g. whole.replace( enclosedBySpecialPairs, function replacer(match, field) {..} ) - because that would always cast the replacement result as string.
+        /**Match <>...<>, \<>...<>, =<>...<> and @<>...<>. Replace $xx parts with respective stored variables. Evaluate. If it was \<>...<>, then escape it as an XPath string. If it was @<>...<>, then make the rest a String object (rather than a string primitive) and store the result of Javascript in field seLiteExtra on that String object.
+           I don't replace through a callback function - e.g. whole.replace( enclosedBySpecialPairs, function replacer(match, field) {..} ) - because that would always cast the replacement result as string.
+        */
         enclosedByEqualsSpecialPairs.lastIndex= 0;
         var match= enclosedByEqualsSpecialPairs.exec(whole);
         if( match ) {
-           return this.evalWithExpandedStoredVars( this.replaceVariables(match[1]) ); // evalWithExpandedStoredVars() calls expandStoredVars()
+           return this.evalWithExpandedStoredVars( this.replaceVariables(match[1]) );
         }
         else {
             enclosedBySpecialPairs.lastIndex=0;
