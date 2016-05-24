@@ -655,10 +655,12 @@ var expandStoredVars;
             break;
 
           case "if":
+          case "ifPromise":
             assertNotAndWaitSuffix(i);
-            lexStack.push(blockDefs.init(i, { nature: "if", elseIfIdxs: [] }));
+            lexStack.push(blockDefs.init(i, { nature: curCmd, elseIfIdxs: [] }));
             break;
           case "elseIf":
+          case "elseIfPromise"://@TODO
             assertNotAndWaitSuffix(i);
             assertBlockIsPending(lexStack, "elseIf", i, ", is not valid outside of an if/endIf block");
             ifDef = lexStack.top();
@@ -953,13 +955,13 @@ var expandStoredVars;
     var ifDef = blkDefHere();
     var ifState = { idx: idxHere(), elseIfItr: arrayIterator(ifDef.elseIfIdxs), withPromise };
     activeBlockStack().push(ifState);
-    this.cascadeElseIf(ifState, condExpr);
+    return this.cascadeElseIf(ifState, condExpr, withPromise);//@TODO pass withPromise and handle deferred - add decoration w/ timeout
   };
   Selenium.prototype.doIf = function doIf(condExpr) {
       this.actionIf( condExpr );
   };
   Selenium.prototype.doIfPromise = function doIfPromise(condExpr) {
-      this.actionIf( condExpr, true );
+      return this.actionIf( condExpr, true );
   };
   
   Selenium.prototype.actionElseIf = function actionElseIf(condExpr, withPromise=false)
@@ -972,14 +974,14 @@ var expandStoredVars;
       setNextCommand(blkDefAt(blkDefHere().ifIdx).endIdx);
     }
     else {
-      this.cascadeElseIf(ifState, condExpr);
+      return this.cascadeElseIf(ifState, condExpr, withPromise);
     }
   };
   Selenium.prototype.doElseIf = function doElseIf(condExpr) {
       this.actionElseIf( condExpr );
   };
   Selenium.prototype.doElseIfPromise= function doElseIfPromise( condExpr ) {
-      this.actionElseIf( condExpr, true );
+      return this.actionElseIf( condExpr, true );
   };
   
   Selenium.prototype.actionElse = function actionElse( withPromise=false )
@@ -1015,18 +1017,32 @@ var expandStoredVars;
       this.actionEndIf( true );
   };
   
-  Selenium.prototype.cascadeElseIf= function cascadeElseIf(ifState, condExpr) {
+  /** @return {undefined|function} Return a function exactly when withPromise==true. Otherwise return undefined.
+   * */
+  Selenium.prototype.cascadeElseIf= function cascadeElseIf(ifState, condExpr, withPromise=false ) {
     this.assertCompilable("", condExpr, ";", "Invalid condition");
-    if (!this.evalWithExpandedStoredVars(condExpr)) {
-      // jump to next elseIf or else or endif
-      var ifDef = blkDefFor(ifState);
-      if (ifState.elseIfItr.hasNext()) { setNextCommand(ifState.elseIfItr.next()); }
-      else if (ifDef.elseIdx)          { setNextCommand(ifDef.elseIdx); }
-      else                             { setNextCommand(ifDef.endIdx); }
+    var promiseOrResult= this.evalWithExpandedStoredVars(condExpr);
+    Selenium.ensureThenableOrNot( promiseOrResult, withPromise );
+    
+    var handler= (value) => {
+        if( !value ) {
+          // jump to next elseIf or else or endif
+          var ifDef = blkDefFor(ifState);
+          if (ifState.elseIfItr.hasNext()) { setNextCommand(ifState.elseIfItr.next()); }
+          else if (ifDef.elseIdx)          { setNextCommand(ifDef.elseIdx); }
+          else                             { setNextCommand(ifDef.endIdx); }
+        }
+        else {
+          ifState.skipElseBlocks = true;
+          // continue into if/elseIf block
+        }
+    };
+    
+    if( !withPromise ) {
+        handler( promiseOrResult );
     }
     else {
-      ifState.skipElseBlocks = true;
-      // continue into if/elseIf block
+        return this.waitForPromiseWithTimout( promiseOrResult, handler );
     }
   };
 
@@ -1393,7 +1409,7 @@ var expandStoredVars;
   Selenium.prototype.doWhile = function doWhile(condExpr)
   {
     var self= this;
-    enterLoop(
+    return enterLoop(
       function doWhileValidate() {    // validate
           assert(condExpr, " 'while' requires a condition expression.");
           self.assertCompilable("", condExpr, ";", "Invalid condition");
@@ -1453,6 +1469,7 @@ var expandStoredVars;
     var self= this;
     enterLoop(
       function doForeachValidate(loop) { // validate
+            //@TODO accept an array object, too
           assert(varName, " 'foreach' requires a variable name.");
           assert(valueExpr, " 'foreach' requires comma-separated values.");
           self.assertCompilable("[ ", valueExpr, " ];", "Invalid value list");
@@ -1576,8 +1593,10 @@ var expandStoredVars;
   // Note: Selenium variable expansion occurs before command processing, therefore we re-execute
   // commands that *may* contain ${} variables. Bottom line, we can't just keep a copy
   // of parameters and then iterate back to the first command inside the body of a loop.
-
-  var enterLoop= function enterLoop(_validateFunc, _initFunc, _condFunc, _iterFunc)
+  /** Only parameter _condFunc can return a Promise, which indicates potential deferral. For that pass withPromise=true.
+   *  Other three parameters that are functions don't support Promise deferral.
+   *  @return {undefined|function} Return a function for whilePromise loop, undefined for non-promise loops. */
+  var enterLoop= function enterLoop(_validateFunc, _initFunc, _condFunc, _iterFunc, withPromise=false )
   {
     assertRunning();
     var loopState;
@@ -1595,14 +1614,24 @@ var expandStoredVars;
       loopState = activeBlockStack().top();
       _iterFunc(loopState);
     }
-
-    if (!_condFunc(loopState)) {
-      loopState.isComplete = true;
-      // jump to bottom of loop for exit
-      setNextCommand(blkDefHere().endIdx);
+    
+    var condition= _condFunc(loopState);
+    if( !withPromise ) {
+        if( !condition ) {
+          loopState.isComplete = true;
+          // jump to bottom of loop for exit
+          setNextCommand(blkDefHere().endIdx);
+        }
+        // else continue into body of loop
     }
-    // else continue into body of loop
+    else {//@TODO
+        Selenium.ensureThenable( promise );
+        return () => {
+            
+        };
+    }
   };
+  
   var iterateLoop= function iterateLoop( dontRestoreVars=false )
   {
     assertRunning();
@@ -2543,11 +2572,24 @@ var expandStoredVars;
         };
     };/**/
     
-    Selenium.prototype.actionStorePromise= function actionStorePromise( script, variableName ) {
-        var promise= this.getEval( script );
-        if( !promise || !('then' in promise) ) {
-            throw new SeleniumError( "Evaluated script: " +script+ "\nIt didn't result into a Promise, neither into an object having .then() method. Instead, it returned: " + promise );
+    Selenium.ensureThenable= function ensureThenable( promise ) {
+        if( !promise || !('then' in promise) || typeof promise.then!=='function' ) {
+            throw new SeleniumError( "Expecting a Promise, or an object having .then() method. Instead, received: " + promise );
         }
+    };
+    Selenium.ensureThenableOrNot= function ensureThenableOrNot( promise, shouldBePromise ) {
+        if( shouldBePromise ) {
+            Selenium.ensureThenable( promise );
+        }
+        else {
+            if( promise && 'then' in promise && typeof promise.then==='function' ) {
+                throw new SeleniumError( "Expecting a non-Promise, non-thenable. Instead, received an object having .then() method: " + promise );
+            }
+        }
+    };
+    // @TODO factor out sync branch, too
+    Selenium.prototype.waitForPromiseWithTimout= function waitForPromiseWithTimout( promise, handler ) {
+        Selenium.ensureThenable( promise );
         var succeeded, failed;
         var result;
         promise.then(
@@ -2556,10 +2598,10 @@ var expandStoredVars;
         );
         // Don't return a simple termination function. If the promise never resolved, then Selenium would call the termination function indefinitely in the background, without any error about it! Hence we use Selenium.decorateFunctionWithTimeout().
         return Selenium.decorateFunctionWithTimeout(
-            function () {
+            () => {
                 if( succeeded ) {
-                    if( variableName!==undefined ) {
-                        storedVars[variableName]= result;
+                    if( handler ) {
+                        handler( result );
                     }
                     return true;
                 }
@@ -2571,10 +2613,20 @@ var expandStoredVars;
         );
     };
     
+    Selenium.prototype.actionStorePromise= function actionStorePromise( script, variableName ) {
+        var promise= this.getEval( script );
+        return this.waitForPromiseWithTimout( promise, value => {
+            if( variableName!==undefined ) {
+                storedVars[variableName]= value;
+            }
+        });
+    };
+    
     Selenium.prototype.doStorePromise= function doStorePromise( script, variableName ) {
         return this.actionStorePromise( script, variableName );
     };
     Selenium.prototype.doPromise= function doPromise( script ) {
         return this.actionStorePromise( script );
     };
+    //@TODO Override/disable promiseAndWait, storePromiseAndWait
 })();
