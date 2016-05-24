@@ -1415,7 +1415,7 @@ var expandStoredVars;
   };
   
   // ================================================================================
-  Selenium.prototype.doWhile = function doWhile(condExpr)
+  Selenium.prototype.actionWhile = function actionWhile( condExpr, withPromise=false )
   {
     var self= this;
     return enterLoop(
@@ -1425,11 +1425,19 @@ var expandStoredVars;
           return null;
       }
       ,function doWhileInitialize() { } // initialize
-      ,function doWhileContinueCheck() { return (self.evalWithExpandedStoredVars(condExpr)); } // continue?
+      ,function doWhileContinueCheck() { return self.evalWithExpandedStoredVars(condExpr); } // continue?
       ,function doWhileIterate() { } // iterate
+      ,withPromise
     );
   };
-  Selenium.prototype.doEndWhile = function doEndWhile() {
+  Selenium.prototype.doWhile = function doWhile( condExpr ) {
+      return this.actionWhile( condExpr );
+  };
+  Selenium.prototype.doWhilePromise = function doWhilePromise( condExpr ) {
+      return this.actionWhile( condExpr, true );
+  };
+  
+  Selenium.prototype.doEndWhile = Selenium.prototype.doEndWhilePromise = function doEndWhile() {
     iterateLoop();
   };
 
@@ -1624,21 +1632,18 @@ var expandStoredVars;
       _iterFunc(loopState);
     }
     
-    var condition= _condFunc(loopState);
-    if( !withPromise ) {
-        if( !condition ) {
-          loopState.isComplete = true;
-          // jump to bottom of loop for exit
-          setNextCommand(blkDefHere().endIdx);
-        }
-        // else continue into body of loop
-    }
-    else {//@TODO
-        Selenium.ensureThenable( promise );
-        return () => {
-            
-        };
-    }
+    return Selenium.prototype.handlePotentialPromise(
+        _condFunc(loopState),
+        value => {
+            if( !value ) {
+              loopState.isComplete = true;
+              // jump to bottom of loop for exit
+              setNextCommand(blkDefHere().endIdx);
+            }
+            // else continue into body of loop
+        },
+        withPromise
+    );
   };
   
   var iterateLoop= function iterateLoop( dontRestoreVars=false )
