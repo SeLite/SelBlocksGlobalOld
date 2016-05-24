@@ -2461,17 +2461,78 @@ var expandStoredVars;
         }
     };
     
-    var originalGetEval= Selenium.prototype.getEval;
-    Selenium.prototype.getEval = function getEval(script) {
-        // Parameter script should be a primitive string. If it is an object, it is a result of exactly one expression within <>...<> (with no prefix & postfix) yeilding an object, or a result of @<>...<> (with an optional prefix/postfix) as processed by Selenium.prototype.preprocessParameter() as overriden by SelBlocksGlobal. Such parameters should not be used with getEval.
+    var ensureScriptIsNotObject= function ensureScriptIsNotObject( script ) {
         if( typeof script==='object' ) {
-            var msg= "You must call getEval (and its derivatives such as storeEval) with a primitive (non-object) string in Target parameter.";
+            var msg= "You must call getEval/getEvalPromise (and their derivatives such as storeEval/storeEvalPromise) with a primitive (non-object) string in Target parameter.";
             msg+= script.seLiteExtra!==undefined
                 ? " Don't use enhanced syntax @<>...<> for Target."
                 : " However, you've used enhanced syntax =<>...<> for Target, which resulted in an object of class " +SeLiteMisc.classNameOf(script)+ ". Alternatively, if you'd really like to pass the string value of this object as a parameter to command getEval (or storeEval...), which would then evaluate it as a Javascript expression (again), use <>...<> instead.";
             msg+= " See http://selite.github.io/EnhancedSelenese"
             SeLiteMisc.fail( msg );
         }
+    };
+    
+    var originalGetEval= Selenium.prototype.getEval;
+    Selenium.prototype.getEval = function getEval(script) {
+        // Parameter script should be a primitive string. If it is an object, it is a result of exactly one expression within <>...<> (with no prefix & postfix) yeilding an object, or a result of @<>...<> (with an optional prefix/postfix) as processed by Selenium.prototype.preprocessParameter() as overriden by SelBlocksGlobal. Such parameters should not be used with getEval.
+        ensureScriptIsNotObject( script );
         return originalGetEval.call( this, expandStoredVars(script) );
+    };
+    
+    /* We don't define Selenium.prototype.getPromise. When it used similar code to the following (i.e. returning an anonymous object with terminationCondition), then automatically-generated storePromise couldn't store the success result. Instead, it stored the anonymous object that contained terminationCondition.
+    Selenium.prototype.getPromiseViaGet= function getOrStorePromise( script ) {
+        var promise= this.getEval( script );
+        if( !promise || !('then' in promise) ) {
+            throw new SeleniumError( "getPromiseViaGet( '" +script+ "' ) didn't return an object having .then() method. Instead, it returned: " + promise );
+        }
+        var succeeded, failed;
+        var result;
+        promise.then(
+            value=> { debugger; succeeded= true; result= value; },
+            failure=> { failed= true; result= failure; }
+        );
+        return {
+            terminationCondition: function terminationCondition() {
+                debugger;
+                if( succeeded ) {
+                    debugger;
+                    // 'this' will be AccessorResult
+                    this.result= result; // This has no effect. If there is terminationCondition, then Selenium doesn't use .result field of AccessorResult object!
+                    return true; //or: return result - no difference
+                }
+                if( failed ) {
+                    throw result;
+                }
+                return false;
+            }
+        };
+    };/**/
+    
+    Selenium.prototype.doStorePromise= function doStorePromise( script, variableName ) {
+        var promise= this.getEval( script );
+        if( !promise || !('then' in promise) ) {
+            throw new SeleniumError( "Evaluated script: " +script+ "\nIt didn't result into a Promise, neither into an object having .then() method. Instead, it returned: " + promise );
+        }
+        var succeeded, failed;
+        var result;
+        promise.then(
+            value=> { succeeded= true; result= value; },
+            failure=> { failed= true; result= failure; }
+        );
+        // Don't return a simple termination function. If the promise never resolved, then Selenium would call the termination function indefinitely in the background, without any error about it! Hence we use Selenium.decorateFunctionWithTimeout().
+        return Selenium.decorateFunctionWithTimeout(
+            function () {
+                if( succeeded ) {
+                    if( variableName!==undefined ) {
+                        storedVars[variableName]= result;
+                    }
+                    return true;
+                }
+                if( failed ) {
+                    throw new SeleniumError( result );
+                }
+            },
+            this.defaultTimeout
+        );
     };
 })();
