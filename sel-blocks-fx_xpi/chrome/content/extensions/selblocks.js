@@ -1022,7 +1022,6 @@ var expandStoredVars;
   Selenium.prototype.cascadeElseIf= function cascadeElseIf(ifState, condExpr, withPromise=false ) {
     this.assertCompilable("", condExpr, ";", "Invalid condition");
     var promiseOrResult= this.evalWithExpandedStoredVars(condExpr);
-    Selenium.ensureThenableOrNot( promiseOrResult, withPromise );
     
     var handler= (value) => {
         if( !value ) {
@@ -1038,12 +1037,7 @@ var expandStoredVars;
         }
     };
     
-    if( !withPromise ) {
-        handler( promiseOrResult );
-    }
-    else {
-        return this.waitForPromiseWithTimout( promiseOrResult, handler );
-    }
+    return this.handlePotentialPromise( promiseOrResult, handler, withPromise );
   };
 
   // ================================================================================
@@ -2587,39 +2581,48 @@ var expandStoredVars;
             }
         }
     };
-    // @TODO factor out sync branch, too
-    Selenium.prototype.waitForPromiseWithTimout= function waitForPromiseWithTimout( promise, handler ) {
-        Selenium.ensureThenable( promise );
-        var succeeded, failed;
-        var result;
-        promise.then(
-            value=> { succeeded= true; result= value; },
-            failure=> { failed= true; result= failure; }
-        );
-        // Don't return a simple termination function. If the promise never resolved, then Selenium would call the termination function indefinitely in the background, without any error about it! Hence we use Selenium.decorateFunctionWithTimeout().
-        return Selenium.decorateFunctionWithTimeout(
-            () => {
-                if( succeeded ) {
-                    if( handler ) {
-                        handler( result );
+    
+    Selenium.prototype.handlePotentialPromise= function handlePotentialPromise( promiseOrResult, handler, withPromise ) {
+        Selenium.ensureThenableOrNot( promiseOrResult, withPromise );
+        if( !withPromise ) {
+            handler( promiseOrResult );
+        }
+        else {
+            var succeeded, failed;
+            var result;
+            promiseOrResult.then(
+                value=> { succeeded= true; result= value; },
+                failure=> { failed= true; result= failure; }
+            );
+            // Don't return a simple termination function. That's because if the promise never resolved, then Selenium would call the termination function indefinitely in the background, without any error about it! Hence we use Selenium.decorateFunctionWithTimeout().
+            return Selenium.decorateFunctionWithTimeout(
+                () => {
+                    if( succeeded ) {
+                        if( handler ) {
+                            handler( result );
+                        }
+                        return true;
                     }
-                    return true;
-                }
-                if( failed ) {
-                    throw new SeleniumError( result );
-                }
-            },
-            this.defaultTimeout
-        );
+                    if( failed ) {
+                        throw new SeleniumError( result );
+                    }
+                },
+                this.defaultTimeout
+            );
+        }
     };
     
     Selenium.prototype.actionStorePromise= function actionStorePromise( script, variableName ) {
         var promise= this.getEval( script );
-        return this.waitForPromiseWithTimout( promise, value => {
-            if( variableName!==undefined ) {
-                storedVars[variableName]= value;
-            }
-        });
+        return this.handlePotentialPromise(
+            promise,
+            value => {
+                if( variableName!==undefined ) {
+                    storedVars[variableName]= value;
+                }
+            },
+            true
+        );
     };
     
     Selenium.prototype.doStorePromise= function doStorePromise( script, variableName ) {
