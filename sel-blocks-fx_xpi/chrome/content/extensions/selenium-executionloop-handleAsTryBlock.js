@@ -10,7 +10,7 @@
 (function($$){
   // Based on a part of $$.handleAsTryBlock from SelBlocks
   $$.testLoopResumeHandleFailedResult= function testLoopResumeHandleFailedResult() {
-      // Selenium IDE doesn't stop running on verifications. Therefore verifications shouldn't trigger 'catch' clause. However, we do suppress making the test case marked as failed, and we log at info level only.
+      // Selenium IDE doesn't stop running on verifications. Therefore verifications shouldn't trigger 'catch' clause. Hence we do suppress making the test case marked as failed, and we log at info level only.
       LOG.info( "try..catch..endTry suppressed verification failure from command: " + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |");
       this.result.failed= false;
       this.result.passed= true;
@@ -18,7 +18,7 @@
   
   // Based on a part of $$.handleAsTryBlock from SelBlocks
   $$.testLoopResumeHandleError= function testLoopResumeHandleError( e ) {
-      LOG.warn( 'testLoopResumeHandleError');
+      LOG.debug( 'testLoopResumeHandleError');
       var originalMessage= e.message; // Selenium IDE generates 'false' message for failed assertions, and those then would only match catch | 'false' |. Following makes them catchable by the actual assertion message.
       if( e.message==='false' ) {
           e.message= this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |";
@@ -27,13 +27,13 @@
         var message= originalMessage!=='false'
             ? '. The message: ' +originalMessage
             : '';
-        LOG.info( 'try..catch..endTry caught an exception or assert failure from command: ' + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |" +message );
+        LOG.debug( 'try..catch..endTry caught an exception or assert failure from command: ' + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |" +message );
         this.continueTest();
       }
       else if( selenium.callStack().top().invokedFromJavascript ) {
-        LOG.warn( 'testLoopResumeHandleError: invokedFromJavascript, popping callStack');
+        LOG.debug( 'testLoopResumeHandleError: invokedFromJavascript, popping callStack');
         !selenium.callStack().top().frameFromAsync || !selenium.callStack().top().onFailure || window.setTimeout( ()=>selenium.callStack().top().onFailure( e ), 0 );
-        LOG.warn( 'testLoopResumeHandleError: invokedFromJavascript, after calling onFailure (if any and if applicable)');
+        LOG.debug( 'testLoopResumeHandleError: invokedFromJavascript, after calling onFailure (if any and if applicable)');
         selenium.callStack().pop();
         this.continueTest();
       }

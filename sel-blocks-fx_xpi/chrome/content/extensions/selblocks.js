@@ -18,6 +18,8 @@
  * -- other helper functions are now a part of Selenium.prototype, where needed
  * - changed 'xyz instanceof Array' to Array.isArray(xyz); this may be needed to recognise Array instances passed from different global scope
  * - similarly, changed xyz.constructor==String to xyz.constructor && xyz.constructor.name==='String'
+ * - removed isOneOf, mapTo and translate()
+ * - added commands: promise, storePromise, ifPromise...endIfPromise, whilePromise..endWhilePromise
  * -----------
  * Notes from SelBlocks
  * 
@@ -2633,9 +2635,8 @@ var expandStoredVars;
     };
     
     Selenium.prototype.actionStorePromise= function actionStorePromise( script, variableName ) {
-        var promise= this.getEval( script );
         return this.handlePotentialPromise(
-            promise,
+            this.getEval( script ), // promise
             value => {
                 if( variableName!==undefined ) {
                     storedVars[variableName]= value;
