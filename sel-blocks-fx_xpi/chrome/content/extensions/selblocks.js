@@ -2604,10 +2604,21 @@ var expandStoredVars;
         }
     };
     
-    Selenium.prototype.handlePotentialPromise= function handlePotentialPromise( promiseOrResult, handler, withPromise ) {
+    /** This functions streamlines handling of Promise (or potentially Promise) results in Selenese commands.
+     *  Call it from Selenium.prototype.doYourFunction(first, second) and return its result value. That ensures the mechanism works for promiseOrResult being either a Promise or a non-Promise.
+     *  @param {(*|Promise)} promiseOrResult
+     *  @param {function} [handler] A callback function. If present, this will invoke it either
+     *  - immediately if !withPromise, or
+     *  - once the promise resolved (which can also be immediately), but not if it resolved after timing out
+     *  @param {boolean} [withPromise=false] Whether promiseOrResult should be a Promise, or not. This function validated promiseOrResult accordingly..
+     *  @return {(function|undefined)} Exactly if withPromise, then return a function to return back to Selenium (that will be used as continuation test) that checks the promise status of and promiseOrResult and it throws on timeout. Otherwise (i.e. !withPromise) return undefined (i.e. no need for a continuation test).
+     * */
+    Selenium.prototype.handlePotentialPromise= function handlePotentialPromise( promiseOrResult, handler=undefined, withPromise=false ) {
         Selenium.ensureThenableOrNot( promiseOrResult, withPromise );
         if( !withPromise ) {
-            handler( promiseOrResult );
+            if( handler ) {
+                handler( promiseOrResult );
+            }
         }
         else {
             var succeeded, failed;
@@ -2616,7 +2627,7 @@ var expandStoredVars;
                 value=> { succeeded= true; result= value; },
                 failure=> { failed= true; result= failure; }
             );
-            // Don't return a simple termination function. That's because if the promise never resolved, then Selenium would call the termination function indefinitely in the background, without any error about it! Hence we use Selenium.decorateFunctionWithTimeout().
+            // Check the timeout. Otherwise, if the promise never resolved, then Selenium would call the termination function indefinitely in the background, without any error about it!
             return Selenium.decorateFunctionWithTimeout(
                 () => {
                     if( succeeded ) {
