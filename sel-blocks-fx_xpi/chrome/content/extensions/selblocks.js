@@ -759,7 +759,7 @@ var expandStoredVars;
             }
             break;
 
-          case "while":    case "for":    case "foreach":    case "forJson":    case "forXml":
+          case "while":    case "for":    case "foreach": case "forIterator": case "forIterable": case "forJson":    case "forXml":
             assertNotAndWaitSuffix(i);
             lexStack.push(blockDefs.init(i, { nature: "loop" }));
             break;
@@ -768,7 +768,7 @@ var expandStoredVars;
             assertCmd(i, lexStack.findEnclosing(Stack.isLoopBlock), ", is not valid outside of a loop");
             blockDefs.init(i, { beginIdx: lexStack.top().idx }); // -> begin
             break;
-          case "endWhile": case "endFor": case "endForeach": case "endForJson": case "endForXml":
+          case "endWhile": case "endFor": case "endForeach": case "endForIterator": case "endForIterable": case "endForJson": case "endForXml":
             assertNotAndWaitSuffix(i);
             expectedCmd = curCmd.substr(3).toLowerCase();
             assertBlockIsPending(lexStack, expectedCmd, i);
@@ -1508,6 +1508,54 @@ var expandStoredVars;
     );
   };
   Selenium.prototype.doEndForeach = function doEndForeach() {
+    iterateLoop();
+  };
+  // ================================================================================
+  /** @param {string} varName 
+   *  @param {function} extraValidationAndIterator Extra validation to run. No parameters. It must return an iterator object (not iterable, neither GeneratorFunction).
+   * */
+  Selenium.prototype.actionForIteratorObject = function actionForIteratorObject( varName, extraValidationAndIterator )
+  {
+    var self= this;
+    enterLoop(
+      function doForIteratorValidate(loop) { // validate
+            //@TODO accept an array object, too
+          assert(varName, " 'forIterator' and its alternatives require a variable name.");
+          loop.iterator= extraValidationAndIterator();
+          return [varName];
+      }
+      ,function doForIteratorInitialize(loop) {}
+      ,function doForIteratorContinue(loop) {
+          var step= loop.iterator.next();
+          if( !step.done ) {
+              storedVars[varName]= step.value;
+          }
+          // When finished, we leave the last value in varName - similar to JS for(..of..)
+          return !step.done;
+      }
+      ,function doForIteratorIterate(loop) {}
+    );
+  };
+  
+  Selenium.prototype.doForIterator = function doForIterator( varName, iteratorExpr/* A Javascript expressions that evaluates to an iterator object (not iterable, neither GeneratorFunction). */ )
+  {
+      this.actionForIteratorObject( varName, () => {
+          this.assertCompilable( '', iteratorExpr, ';', "Invalid iterator expression.");
+          return this.evalWithExpandedStoredVars( iteratorExpr );
+      } );
+  };
+  Selenium.prototype.doEndForIterator = function doEndForIterator() {
+    iterateLoop();
+  };
+  
+  Selenium.prototype.doForIterable = function doForIterable( varName, iterableExpr/* A Javascript expressions that evaluates to an iterable object (not an iterator, neither GeneratorFunction). */ )
+  {
+      this.actionForIteratorObject( varName, () => {
+          this.assertCompilable( '', iterableExpr, ';', "Invalid iterable expression.");
+          return this.evalWithExpandedStoredVars( iterableExpr )[Symbol.iterator]();
+      } );
+  };
+  Selenium.prototype.doEndForIterable = function doEndForIterable() {
     iterateLoop();
   };
   // ================================================================================
@@ -2598,7 +2646,8 @@ var expandStoredVars;
             Selenium.ensureThenable( promise );
         }
         else {
-            if( promise && 'then' in promise && typeof promise.then==='function' ) {
+            // Following needs to check for typeof promise==='object'. Otherwise, if promise===true, expression 'then' in true fails.
+            if( promise && typeof promise==='object' && 'then' in promise && typeof promise.then==='function' ) {
                 throw new SeleniumError( "Expecting a non-Promise, non-thenable. Instead, received an object having .then() method: " + promise );
             }
         }
