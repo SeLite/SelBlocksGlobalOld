@@ -50,6 +50,15 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
+<function name="ifPromise">
+    <param name="condExpr">A Javascript expression that evaluates to a <code>Promise</code>. Its result (once resolved) determines whether to run
+        the positive branch or negative branch (if present).
+    </param>
+    <comment>Similar to <code>if</code>, but <code>condExpr</code> should evaluate to a <code>Promise</code> object. The resolved value of the promise determines the control flow.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
 <function name="elseIf">
     <param name="condExpr">Condition expression. It determines whether to run
         the positive branch or negative branch (if present).
@@ -65,6 +74,15 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
+<function name="elseIfPromise">
+    <param name="condExpr">A Javascript expression that evaluates to a <code>Promise</code>. Its result (once resolved) determines whether to run
+        the positive branch or negative branch (if present).
+    </param>
+    <comment>Similar to <code>elseIf</code>, but <code>condExpr</code> should evaluate to a <code>Promise</code> object. The resolved value of the promise determines the control flow.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
 <function name="else">
     <comment>Negative branch of a matching <code>if</code> statement; optional. If the matching <code>if</code>
         evaluated its condition as false (compared non-strictly), then it passes the control here.
@@ -72,6 +90,12 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         processed (i.e. any statements between the matching <code>if</code> and this <code>else</code>).
         On reaching this <code>else</code>, the control skips this negative branch and continues from the
         matching <code>endIf</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="elsePromise">
+    <comment>Similar to <code>else</code>, but for use with <code>ifPromise</code>.
         <br/>
         This command is a part of SeLite SelBlocks Global.
     </comment>
@@ -86,6 +110,12 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
+<function name="endIfPromise">
+    <comment>Similar to <code>endIf</code>, but for use with <code>ifPromise</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
 <function name="while">
     <param name="condExpr">Condition expression.
     </param>
@@ -95,8 +125,22 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
+<function name="whilePromise">
+    <param name="condExpr">A Javascript expression that evaluates to a <code>Promise</code>. Its result (once resolved) determines whether to start/continue with the loop, or whether to skip/finish it.
+    </param>
+    <comment>Conditional Promise-based loop statement. It evaluates <code>condExpr</code>, which should return a <code>Promise</code> object. As far as the promise resolves to true (compared non-strictly), it keeps running all statements up to the matching <code>endWhilePromise</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
 <function name="endWhile">
     <comment>End of the matching <code>while</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endWhilePromise">
+    <comment>End of the matching <code>whilePromise</code>.
         <br/>
         This command is a part of SeLite SelBlocks Global.
     </comment>
@@ -301,8 +345,25 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
     </comment>
 </function>
 <function name="throw">
-    <param name="error">A Javascript expression, that yields a string or an error. If it's a string literal, enclose it in apostrophes or quotes.</param>
+    <param name="error">A Javascript expression that yields a string or an error. If it's a string literal, enclose it in apostrophes or quotes.</param>
     <comment>Throw an error.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="promise">
+    <param name="script">A Javascript expression that evaluates to a <code>Promise</code>.</param>
+    <comment>
+        Similar to <code>getEval</code>, but <code>Promise</code>-based. It evaluates the given script just like <code>getEval</code> does. However, it requires the result of the script to be a <code>Promise</code> object. Then it waits until the promise gets resolved, or until it times out. If the promise times out or it resolves with a failure, this throws an exception.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="storePromise">
+    <param name="script">A Javascript expression that evaluates to a <code>Promise</code>.</param>
+    <param name="variableName">Name of a stored variable to save the result value of the promise, if the promise gets resolved successfully.</param>
+    <comment>
+        Similar to <code>promise</code>. If the promise resolves successfully, this command saves the result to the given stored variable.
         <br/>
         This command is a part of SeLite SelBlocks Global.
     </comment>

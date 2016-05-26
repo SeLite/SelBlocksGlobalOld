@@ -2660,6 +2660,7 @@ var expandStoredVars;
     Selenium.prototype.doStorePromise= function doStorePromise( script, variableName ) {
         return this.actionStorePromise( script, variableName );
     };
+    
     Selenium.prototype.doPromise= function doPromise( script ) {
         return this.actionStorePromise( script );
     };
