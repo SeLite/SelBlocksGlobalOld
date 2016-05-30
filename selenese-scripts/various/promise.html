@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://change-this-to-the-site-you-are-testing/" />
+<title>promise</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">promise</td></tr>
+</thead><tbody>
+<tr>
+	<td>storePromiseValue</td>
+	<td>new Promise( (resolve)=&gt;{ resolve(true); } )</td>
+	<td>resolvedTrue</td>
+</tr>
+<tr>
+	<td>assertEval</td>
+	<td>${resolvedTrue}</td>
+	<td>true</td>
+</tr>
+<tr>
+	<td>storePromiseValue</td>
+	<td>new Promise( (resolve)=&gt;{ resolve(false); } )</td>
+	<td>resolvedFalse</td>
+</tr>
+<tr>
+	<td>assertEval</td>
+	<td>${resolvedFalse}</td>
+	<td>false</td>
+</tr>
+<tr>
+	<td>storePromiseValue</td>
+	<td>new Promise( (resolve)=&gt;{ resolve(undefined); } )</td>
+	<td>undefined</td>
+</tr>
+<tr>
+	<td>storePromiseValue</td>
+	<td>new Promise( (resolve)=&gt;{ resolve(null); } )</td>
+	<td>null</td>
+</tr>
+<!---->
+<tr>
+	<td>storeEval</td>
+	<td>Math.max(0, selenium.defaultTimeout-50)</td>
+	<td>shortPause</td>
+</tr>
+<tr>
+	<td>ifPromise</td>
+	<td>new Promise( (resolve, reject)=&gt;{ window.setTimeout( ()=&gt;resolve(1), ${shortPause} ); } )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;log</td>
+	<td>promise equaled true</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endIfPromise</td>
+	<td></td>
+	<td></td>
+</tr>
+<!---->
+<tr>
+	<td>if</td>
+	<td>false</td>
+	<td></td>
+</tr>
+<!--    TODO-->
+<!--        getEval() that times out. It caused Selenium IDE 2.9.1 and Firefox 46.0.1 run away/freeze!-->
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>var nowMilliSec=Date.now(); while( Date.now()-nowMilliSec&lt;selenium.defaultTimeout+100 ); LOG.info('getEval finished while() loop, even though it was overtime.');</td>
+	<td></td>
+</tr>
+<tr>
+	<td>promise</td>
+	<td>new Promise( ()=&gt;'never' )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endIf</td>
+	<td></td>
+	<td></td>
+</tr>
+<!---->
+<!--Promises that times out:-->
+<tr>
+	<td>getEval</td>
+	<td>$promiseTimedOut= undefined</td>
+	<td></td>
+</tr>
+<tr>
+	<td>try</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>storePromiseValue</td>
+	<td>new Promise( ()=&gt;{} )</td>
+	<td>never</td>
+</tr>
+<tr>
+	<td>catch</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;storeEval</td>
+	<td>true</td>
+	<td>promiseTimedOut</td>
+</tr>
+<tr>
+	<td>endTry</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>getEval</td>
+	<td>$promiseTimedOut= undefined</td>
+	<td></td>
+</tr>
+<!---->
+<tr>
+	<td>try</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;promise</td>
+	<td>new Promise( resolve =&gt; window.setTimeout( ()=&gt;resolve(1), selenium.defaultTimeout+100) )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>catch</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;storeEval</td>
+	<td>true</td>
+	<td>promiseTimedOut</td>
+</tr>
+<tr>
+	<td>endTry</td>
+	<td></td>
+	<td></td>
+</tr>
+<!---->
+<tr>
+	<td>getEval</td>
+	<td>if( !$promiseTimedOut) { throw new Error( &quot;XXX _case: A promise should have timed out.&quot; ); }</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

@@ -172,7 +172,7 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
-<function name="foreach">
+<function name="forEach">
     <param name="varName">Variable name, that will be assigned values from <code>valueExpr</code>.</param>
     <param name="valueExpr">Comma-separated values or expressions, that will be iterated through. Can be empty.</param>
     <comment>It iterates through given list of values/expressions, assigning each
@@ -182,8 +182,48 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
+<function name="endForEach">
+    <comment>End of the matching <code>forEach</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="foreach">
+    <comment>Obsolete. Instead, use <code>forEach</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
 <function name="endForeach">
-    <comment>End of the matching <code>foreach</code>.
+    <comment>Obsolete. Instead, use <code>endForEach</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="forIterator">
+    <param name="varName">Variable name, that will be assigned values from <code>valueExpr</code>.</param>
+    <param name="iteratorExpr">A Javascript expression that evaluates to an iterator object (not iterable, neither GeneratorFunction).</param>
+    <comment>It iterates the given iterator. It stores each iterated value to a stored variable with name <code>varName</code>. For each value, it then runs statement(s) up to the matching <code>endForeach</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endForIterator">
+    <comment>End of the matching <code>forIterator</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="forIterable">
+    <param name="varName">Variable name, that will be assigned values from <code>valueExpr</code>.</param>
+    <param name="iteratorExpr">A Javascript expression that evaluates to an iterable object (not an iterator, neither GeneratorFunction).</param>
+    <comment>It iterates the given iterable. It stores each iterated value to a stored variable with name <code>varName</code>. For each value, it then runs statement(s) up to the matching <code>endForeach</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endForIterable">
+    <comment>End of the matching <code>forIterable</code>.
         <br/>
         This command is a part of SeLite SelBlocks Global.
     </comment>
@@ -359,7 +399,7 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
-<function name="storePromise">
+<function name="storePromiseValue">
     <param name="script">A Javascript expression that evaluates to a <code>Promise</code>.</param>
     <param name="variableName">Name of a stored variable to save the result value of the promise, if the promise gets resolved successfully.</param>
     <comment>

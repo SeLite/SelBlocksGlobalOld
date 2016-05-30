@@ -19,7 +19,7 @@
  * - changed 'xyz instanceof Array' to Array.isArray(xyz); this may be needed to recognise Array instances passed from different global scope
  * - similarly, changed xyz.constructor==String to xyz.constructor && xyz.constructor.name==='String'
  * - removed isOneOf, mapTo and translate()
- * - added commands: promise, storePromise, ifPromise...endIfPromise, whilePromise..endWhilePromise
+ * - added commands: promise, storePromiseValue, ifPromise...endIfPromise, whilePromise..endWhilePromise
  * -----------
  * Notes from SelBlocks
  * 
@@ -373,7 +373,7 @@ var expandStoredVars;
        *  name - used for 'try', it's 'target' of the step (the 2nd column in Selenium IDE)
        *  tryIdx - used by 'catch', 'finally' and 'endTry', index of the matching 'try'
        *  finallyIdx
-       *  beginIdx - used by 'continue', 'break', endWhile, endFor, endForeach, endForJson, endForXml;
+       *  beginIdx - used by 'continue', 'break', endWhile, endFor, endForEach, endForJson, endForXml;
        *    it's an index of the start of the current loop
        *  endIdx
        *  funcIdx - used by 'return', 'endfunction', 'endScript'
@@ -759,7 +759,7 @@ var expandStoredVars;
             }
             break;
 
-          case "while":    case "for":    case "foreach": case "forIterator": case "forIterable": case "forJson":    case "forXml":
+          case "while":    case "for":    case "forEach": case "foreach": case "forIterator": case "forIterable": case "forJson":    case "forXml":
             assertNotAndWaitSuffix(i);
             lexStack.push(blockDefs.init(i, { nature: "loop" }));
             break;
@@ -768,7 +768,7 @@ var expandStoredVars;
             assertCmd(i, lexStack.findEnclosing(Stack.isLoopBlock), ", is not valid outside of a loop");
             blockDefs.init(i, { beginIdx: lexStack.top().idx }); // -> begin
             break;
-          case "endWhile": case "endFor": case "endForeach": case "endForIterator": case "endForIterable": case "endForJson": case "endForXml":
+          case "endWhile": case "endFor": case "endForeach": case "endForEach": case "endForIterator": case "endForIterable": case "endForJson": case "endForXml":
             assertNotAndWaitSuffix(i);
             expectedCmd = curCmd.substr(3).toLowerCase();
             assertBlockIsPending(lexStack, expectedCmd, i);
@@ -1483,14 +1483,14 @@ var expandStoredVars;
     iterateLoop( true );
   };
   // ================================================================================
-  Selenium.prototype.doForeach = function doForeach(varName, valueExpr)
+  Selenium.prototype.doForEach = function doForEach(varName, valueExpr)
   {
     var self= this;
     enterLoop(
-      function doForeachValidate(loop) { // validate
+      function doForEachValidate(loop) { // validate
             //@TODO accept an array object, too
-          assert(varName, " 'foreach' requires a variable name.");
-          assert(valueExpr, " 'foreach' requires comma-separated values.");
+          assert(varName, " 'forEach' requires a variable name.");
+          assert(valueExpr, " 'forEach' requires comma-separated values.");
           self.assertCompilable("[ ", valueExpr, " ];", "Invalid value list");
           loop.values = self.evalWithExpandedStoredVars("[" + valueExpr + "]");
           if (loop.values.length === 1 && Array.isArray(loop.values[0])) {
@@ -1498,18 +1498,20 @@ var expandStoredVars;
           }
           return [varName, "_i"];
       }
-      ,function doForeachInitialize(loop) { loop.i = 0; storedVars[varName] = loop.values[loop.i]; }       // initialize
-      ,function doForeachContinue(loop) { storedVars._i = loop.i; return (loop.i < loop.values.length);} // continue?
-      ,function doForeachIterate(loop) { // iterate
+      ,function doForEachInitialize(loop) { loop.i = 0; storedVars[varName] = loop.values[loop.i]; }       // initialize
+      ,function doForEachContinue(loop) { storedVars._i = loop.i; return (loop.i < loop.values.length);} // continue?
+      ,function doForEachIterate(loop) { // iterate
           if (++(loop.i) < loop.values.length) {
             storedVars[varName] = loop.values[loop.i];
           }
       }
     );
   };
-  Selenium.prototype.doEndForeach = function doEndForeach() {
+  Selenium.prototype.doEndForEach = function doEndForEach() {
     iterateLoop();
   };
+  Selenium.prototype.doForeach= Selenium.prototype.doForEach;
+  Selenium.prototype.doEndForeach = Selenium.prototype.doEndForEach;
   // ================================================================================
   /** @param {string} varName 
    *  @param {function} extraValidationAndIterator Extra validation to run. No parameters. It must return an iterator object (not iterable, neither GeneratorFunction).
@@ -1537,7 +1539,7 @@ var expandStoredVars;
     );
   };
   
-  Selenium.prototype.doForIterator = function doForIterator( varName, iteratorExpr/* A Javascript expressions that evaluates to an iterator object (not iterable, neither GeneratorFunction). */ )
+  Selenium.prototype.doForIterator = function doForIterator( varName, iteratorExpr/* A Javascript expression that evaluates to an iterator object (not iterable, neither GeneratorFunction). */ )
   {
       this.actionForIteratorObject( varName, () => {
           this.assertCompilable( '', iteratorExpr, ';', "Invalid iterator expression.");
@@ -1548,7 +1550,7 @@ var expandStoredVars;
     iterateLoop();
   };
   
-  Selenium.prototype.doForIterable = function doForIterable( varName, iterableExpr/* A Javascript expressions that evaluates to an iterable object (not an iterator, neither GeneratorFunction). */ )
+  Selenium.prototype.doForIterable = function doForIterable( varName, iterableExpr/* A Javascript expression that evaluates to an iterable object (not an iterator, neither GeneratorFunction). */ )
   {
       this.actionForIteratorObject( varName, () => {
           this.assertCompilable( '', iterableExpr, ';', "Invalid iterable expression.");
@@ -2694,7 +2696,7 @@ var expandStoredVars;
         }
     };
     
-    Selenium.prototype.actionStorePromise= function actionStorePromise( script, variableName ) {
+    Selenium.prototype.actionStorePromiseValue= function actionStorePromiseValue( script, variableName ) {
         return this.handlePotentialPromise(
             this.getEval( script ), // promise
             value => {
@@ -2706,12 +2708,12 @@ var expandStoredVars;
         );
     };
     
-    Selenium.prototype.doStorePromise= function doStorePromise( script, variableName ) {
-        return this.actionStorePromise( script, variableName );
+    Selenium.prototype.doStorePromiseValue= function doStorePromiseValue( script, variableName ) {
+        return this.actionStorePromiseValue( script, variableName );
     };
     
     Selenium.prototype.doPromise= function doPromise( script ) {
-        return this.actionStorePromise( script );
+        return this.actionStorePromiseValue( script );
     };
-    //@TODO Override/disable promiseAndWait, storePromiseAndWait
+    //@TODO Override/disable promiseAndWait, storePromiseValueAndWait
 })();
