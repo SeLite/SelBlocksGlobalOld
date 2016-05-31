@@ -2348,6 +2348,7 @@ var expandStoredVars;
   
   /** Match an absolute filepath, after any backslashes \ were converted to forward slashes /. */
   var absoluteFilePathPrefix= /^(\/|\/?[a-z]:\/)/i;
+  var backSlashGlobal= /\\/g;
   
   /** Convert a filepath to URL. If filepath doesn't start with http, data: or file://, then treat it as a filepath. If it's not an absolute filepath (i.e. not starting with /, [a-z]:\ or /[a-z]:\), then convert it to absolute. Convert directory separators / or \ as appropriate. (data: meta protocol is primarily for SeLite Preview.)
    * @param {boolean} [relativeToTestSuite=false] If true, then require SeLite Settings and treat filepath as relative to test suite. Otherwise treat it as relative to test case (classic SelBlocks behaviour).
@@ -2357,7 +2358,7 @@ var expandStoredVars;
     if( filepath.indexOf("http")===0 || filepath.indexOf("data:")===0 ) {
       return filepath;
     }
-    filepath= filepath.replace("\\", "/", "g");
+    filepath= filepath.replace( backSlashGlobal, "/" );
     var URL_PFX = "file://";
     if (filepath.substring(0, URL_PFX.length).toLowerCase() !== URL_PFX) {
       if( filepath.match(absoluteFilePathPrefix) ) {
@@ -2369,10 +2370,10 @@ var expandStoredVars;
       else {
         var relativeToFolder;
         if( relativeToTestSuite ) {
-            relativeToFolder= SeLiteSettings.getTestSuiteFolder().replace("\\", "/", "g");
+            relativeToFolder= SeLiteSettings.getTestSuiteFolder().replace( backSlashGlobal, "/" );
         }
         else {
-            relativeToFolder= testCase.file.path.replace("\\", "/", "g");
+            relativeToFolder= testCase.file.path.replace( backSlashGlobal, "/" );
             var i = relativeToFolder.lastIndexOf("/");
             relativeToFolder= relativeToFolder.substr(0, i);
         }
