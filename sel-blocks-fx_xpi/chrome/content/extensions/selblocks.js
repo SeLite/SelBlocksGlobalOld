@@ -2716,5 +2716,30 @@ var expandStoredVars;
     Selenium.prototype.doPromise= function doPromise( script ) {
         return this.actionStorePromiseValue( script );
     };
+    
+    Selenium.prototype.doPromise= function doPromise( script ) {
+        return this.actionStorePromiseValue( script );
+    };
+    
+    var OS= Components.utils.import("resource://gre/modules/osfile.jsm", {}).OS;
+    var Downloads= Components.utils.import("resource://gre/modules/Downloads.jsm", {} ).Downloads;
+    
+    /** Start downloading a file.
+     *  @param {string] url Full URL.
+     *  @return {Promise} As per https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Downloads.jsm#fetch%28%29.
+     * */
+    Selenium.download= function download( url, folder ) {
+        var lastIndexOfSlash= url.lastIndexOf('/');
+        var fileName= url.substring( lastIndexOfSlash+1 );
+        
+        var indexOfQuestionmark= fileName.indexOf('?');
+        if( indexOfQuestionmark>0 ) {
+            fileName= fileName.substring( 0, indexOfQuestionmark );
+        }
+        var filePath= OS.Path.join( folder, fileName );
+        filePath= OS.Path.normalize( filePath );
+        return Downloads.fetch( url, filePath );
+    };
+    
     //@TODO Override/disable promiseAndWait, storePromiseValueAndWait
 })();
