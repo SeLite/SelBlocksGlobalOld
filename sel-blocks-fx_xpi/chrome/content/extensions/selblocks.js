@@ -67,15 +67,6 @@
  **/
 
 "use strict";
-
-// Following assignments is purely for JSDoc.
-/** @namespace */
-selblocks= selblocks;
-
-// Following assignments is purely for JSDoc.
-/** @namespace */
-Selenium= Selenium;
-
 // =============== global functions as script helpers ===============
 // getEval script helpers
 
@@ -114,8 +105,8 @@ function $X(xpath, contextNode, resultType) {
 /** @type {function}
  */
 var expandStoredVars;
-
-(function(){
+// selbocks name-space
+(function($$){
 
   // =============== Javascript extensions as script helpers ===============
   // EXTENSION REVIEWERS:
@@ -496,7 +487,7 @@ var expandStoredVars;
           Selenium.reloadScripts();
       }
       if (branchIdx !== null) {
-        selblocks.LOG.info("branch => " + fmtCmdRef(branchIdx));
+        $$.LOG.info("branch => " + fmtCmdRef(branchIdx));
         // Following uses -1 because the original nextCommand() will increase this.debugIndex by 1 when invoked below
         this.debugIndex = localIdx(branchIdx)-1;
 
@@ -530,9 +521,9 @@ var expandStoredVars;
   // TBD: skip during single command execution
 
   // SelBlocksGlobal: leaving the original indentation here, to make mergies easier:
-  selblocks.fn.interceptAfter(Selenium.prototype, "reset", function resetInterceptedBySelBlocksGlobal()
+  $$.fn.interceptAfter(Selenium.prototype, "reset", function resetInterceptedBySelBlocksGlobal()
   {
-    selblocks.LOG.trace("In tail intercept :: Selenium.reset()");
+    $$.LOG.trace("In tail intercept :: Selenium.reset()");
     // SelBlocksGlobal: no support for onServer
     try {
       compileSelBlocks();
@@ -543,14 +534,14 @@ var expandStoredVars;
     callStack = new Stack();
     callStack.push({ blockStack: new Stack() }); // top-level execution state
 
-    selblocks.tcf = { nestingLevel: -1 }; // try/catch/finally nesting
+    $$.tcf = { nestingLevel: -1 }; // try/catch/finally nesting
 
     if( testCaseDebugContextWasIntercepted===undefined ) {
     // customize flow control logic
     // SelBlocksGlobal: This is a head-intercept, rather than interceptReplace as in SelBlocks 2.0.1. (In SelBlocksGlobal it can't be a tail intercept - contrary to a comment suggestion in SelBlocks.) That's why the injected nextCommand() doesn't increase debugIndex - because the original nextCommand() does it after the injected head intercept.
     // SelBlocksGlobal: intercepting TestCaseDebugContext.prototype.nextCommand() rather than testCase.debugContext.nextCommand() as it was in SelBlocks.
-        selblocks.LOG.debug("Configuring head intercept: TestCaseDebugContext.prototype.nextCommand()");
-        selblocks.fn.interceptBefore(TestCaseDebugContext.prototype, "nextCommand", nextCommand);
+        $$.LOG.debug("Configuring head intercept: TestCaseDebugContext.prototype.nextCommand()");
+        $$.fn.interceptBefore(TestCaseDebugContext.prototype, "nextCommand", nextCommand);
         testCaseDebugContextWasIntercepted= true;
     }
   });
@@ -911,7 +902,7 @@ var expandStoredVars;
 
   // ==================== SelBlocks Commands (Custom Selenium Actions) ====================
 
-  var iexpr = Object.create(selblocks.InfixExpressionParser);
+  var iexpr = Object.create($$.InfixExpressionParser);
 
   // SelBlocks Global doesn't use validateNames()
   // validate declared variable/parameter name (without $ prefix)
@@ -1087,8 +1078,8 @@ var expandStoredVars;
     var tryDef = blkDefHere();
 
     if (!tryDef.catchIdx && !tryDef.finallyIdx) {
-      selblocks.LOG.warn(fmtCurCmd() + " does not have a catch-block nor a finally-block, and therefore serves no purpose");
-      if (selblocks.tcf.nestingLevel === -1) {
+      $$.LOG.warn(fmtCurCmd() + " does not have a catch-block nor a finally-block, and therefore serves no purpose");
+      if ($$.tcf.nestingLevel === -1) {
         return; // continue into try-block without any special error handling
       }
     }
@@ -1096,27 +1087,27 @@ var expandStoredVars;
     // log an advisory about the active catch block
     if (tryDef.catchIdx) {
       var errDcl = localCommand( tryDef.catchIdx ).target;
-      selblocks.LOG.debug(tryName + " catchable: " + (errDcl || "ANY"));
+      $$.LOG.debug(tryName + " catchable: " + (errDcl || "ANY"));
     }
 
-    selblocks.tcf.nestingLevel++;
+    $$.tcf.nestingLevel++;
     tryState.execPhase = "trying";
 
-    if (selblocks.tcf.nestingLevel === 0) {
+    if ($$.tcf.nestingLevel === 0) {
       // enable special command handling
       var self= this;
-      // Original SelBlocks overrode resume() on selblocks.seleniumTestRunner.currentTest.
-      selblocks.fn.interceptPush(editor, "testLoopResumeHandleFailedResult", selblocks.testLoopResumeHandleFailedResult );
+      // Original SelBlocks overrode resume() on $$.seleniumTestRunner.currentTest.
+      $$.fn.interceptPush(editor, "testLoopResumeHandleFailedResult", $$.testLoopResumeHandleFailedResult );
       
-      // Override testLoopResumeHandleFailedResult first and testLoopResumeHandleError second, because the overriden testLoopResumeHandleError() expects the top intercepted function to be itself, so it can call selblocks.fn.getInterceptTop().attrs.manageError(e).
-      selblocks.fn.interceptPush(editor, "testLoopResumeHandleError",
-          selblocks.testLoopResumeHandleError, {
+      // Override testLoopResumeHandleFailedResult first and testLoopResumeHandleError second, because the overriden testLoopResumeHandleError() expects the top intercepted function to be itself, so it can call $$.fn.getInterceptTop().attrs.manageError(e).
+      $$.fn.interceptPush(editor, "testLoopResumeHandleError",
+          $$.testLoopResumeHandleError, {
             manageError: function manageError(err) {
               return self.handleCommandError(err);
             }
           });
     }
-    selblocks.LOG.debug("++ try nesting: " + selblocks.tcf.nestingLevel);
+    $$.LOG.debug("++ try nesting: " + $$.tcf.nestingLevel);
     // continue into try-block
   };
 
@@ -1135,14 +1126,14 @@ var expandStoredVars;
         setNextCommand(tryDef.endIdx);
       }
     }
-    selblocks.LOG.debug("entering catch block");
+    $$.LOG.debug("entering catch block");
     // else continue into catch-block
   };
   Selenium.prototype.doFinally = function doFinally() {
     assertRunning();
     assertActiveScope(blkDefHere().tryIdx);
     delete storedVars._error;
-    selblocks.LOG.debug("entering finally block");
+    $$.LOG.debug("entering finally block");
     // continue into finally-block
   };
   Selenium.prototype.doEndTry = function doEndTry(tryName)
@@ -1152,23 +1143,23 @@ var expandStoredVars;
     delete storedVars._error;
     var tryState = activeBlockStack().pop();
     if (tryState.execPhase) { // ie, it DOES have a catch and/or a finally block
-      selblocks.tcf.nestingLevel--;
-      selblocks.LOG.debug("-- try nesting: " + selblocks.tcf.nestingLevel);
-      if (selblocks.tcf.nestingLevel < 0) {
+      $$.tcf.nestingLevel--;
+      $$.LOG.debug("-- try nesting: " + $$.tcf.nestingLevel);
+      if ($$.tcf.nestingLevel < 0) {
         // discontinue try-block handling
-        selblocks.fn.interceptPop(); // Fpr testLoopResumeHandleError
-        selblocks.fn.interceptPop(); // For testLoopResumeHandleFailedResult
-        // selblocks.tcf.bubbling = null;
+        $$.fn.interceptPop(); // Fpr testLoopResumeHandleError
+        $$.fn.interceptPop(); // For testLoopResumeHandleFailedResult
+        // $$.tcf.bubbling = null;
       }
-      if (selblocks.tcf.bubbling) {
+      if ($$.tcf.bubbling) {
         this.reBubble();
       }
       else {
-        selblocks.LOG.debug("no bubbling in process");
+        $$.LOG.debug("no bubbling in process");
       }
     }
     var tryDef = blkDefFor(tryState);
-    selblocks.LOG.debug("end of try '" + tryDef.name + "'");
+    $$.LOG.debug("end of try '" + tryDef.name + "'");
     // fall out of endTry
   };
 
@@ -1183,42 +1174,42 @@ var expandStoredVars;
     if( tryState ) {
         if( tryState.stateFromAsync ) {
             LOG.debug( 'handleCommandError(): stateFromAsync' );
-            selblocks.tcf.bubbling = null;
+            $$.tcf.bubbling = null;
             return false;
         }
         tryDef = blkDefFor(tryState);
-        selblocks.LOG.debug("error encountered while: " + tryState.execPhase);
+        $$.LOG.debug("error encountered while: " + tryState.execPhase);
         if (hasUnspentCatch(tryState)) {
           if (this.isMatchingCatch(err, tryDef.catchIdx)) {
             // an expected kind of error has been caught
-            selblocks.LOG.info("@" + (idxHere(+1)) + ", error has been caught" + fmtCatching(tryState));
+            $$.LOG.info("@" + (idxHere(+1)) + ", error has been caught" + fmtCatching(tryState));
             tryState.hasCaught = true;
             tryState.execPhase = "catching";
             storedVars._error = err;
-            selblocks.tcf.bubbling = null;
+            $$.tcf.bubbling = null;
             setNextCommand(tryDef.catchIdx);
             return true;
           }
         }
     }
     // error not caught .. instigate bubbling
-    selblocks.LOG.debug("error not caught, bubbling error: '" + err.message + "'");
-    selblocks.tcf.bubbling = { mode: "error", error: err, srcIdx: idxHere() };
+    $$.LOG.debug("error not caught, bubbling error: '" + err.message + "'");
+    $$.tcf.bubbling = { mode: "error", error: err, srcIdx: idxHere() };
     if (tryState ) {
       if( hasUnspentFinally(tryState)) {
-        selblocks.LOG.info("Bubbling suspended while finally block runs");
+        $$.LOG.info("Bubbling suspended while finally block runs");
         tryState.execPhase = "finallying";
         tryState.hasFinaled = true;
         setNextCommand(tryDef.finallyIdx);
         return true;
       }
-      if (selblocks.tcf.nestingLevel > 0) {
-        selblocks.LOG.info("No further handling, error bubbling will continue outside of this try.");
+      if ($$.tcf.nestingLevel > 0) {
+        $$.LOG.info("No further handling, error bubbling will continue outside of this try.");
         setNextCommand(tryDef.endIdx);
         return true;
       }
     }
-    selblocks.LOG.info("No handling provided in this try section for this error: '" + err.message + "'");
+    $$.LOG.info("No handling provided in this try section for this error: '" + err.message + "'");
     return false; // stop test
   };
 
@@ -1231,9 +1222,9 @@ var expandStoredVars;
       if (_isContextBlockType && _isContextBlockType(stackFrame)) {
         return;
       }
-      if (selblocks.tcf.bubbling && selblocks.tcf.bubbling.mode === "error" && hasUnspentCatch(stackFrame)) {
+      if ($$.tcf.bubbling && $$.tcf.bubbling.mode === "error" && hasUnspentCatch(stackFrame)) {
         var tryDef = blkDefFor(stackFrame);
-        if (self.isMatchingCatch(selblocks.tcf.bubbling.error, tryDef.catchIdx)) {
+        if (self.isMatchingCatch($$.tcf.bubbling.error, tryDef.catchIdx)) {
           return;
         }
       }
@@ -1242,16 +1233,16 @@ var expandStoredVars;
     
     var tryState = bubbleToTryBlock(isTryWithMatchingOrFinally);
     var tryDef = blkDefFor(tryState);
-    selblocks.tcf.bubbling = { mode: "command", srcIdx: cmdIdx, _isStopCriteria: _isContextBlockType };
+    $$.tcf.bubbling = { mode: "command", srcIdx: cmdIdx, _isStopCriteria: _isContextBlockType };
     if (hasUnspentFinally(tryState)) {
-      selblocks.LOG.info("Command " + fmtCmdRef(cmdIdx) + ", suspended while finally block runs");
+      $$.LOG.info("Command " + fmtCmdRef(cmdIdx) + ", suspended while finally block runs");
       tryState.execPhase = "finallying";
       tryState.hasFinaled = true;
       setNextCommand(tryDef.finallyIdx);
       // begin finally block
     }
     else {
-      selblocks.LOG.info("No further handling, bubbling continuing outside of this try.");
+      $$.LOG.info("No further handling, bubbling continuing outside of this try.");
       setNextCommand(tryDef.endIdx);
       // jump out of try section
     }
@@ -1288,8 +1279,8 @@ var expandStoredVars;
   // unwind the blockStack, and callStack (ie, aborting functions), until reaching the given criteria
  /** @return {null|false} if there is no appropriate try block. Return trystate object. */
   var bubbleToTryBlock= function bubbleToTryBlock(_hasCriteria) {
-    if (selblocks.tcf.nestingLevel < 0) {
-      selblocks.LOG.warn("bubbleToTryBlock() called outside of any try nesting");
+    if ($$.tcf.nestingLevel < 0) {
+      $$.LOG.warn("bubbleToTryBlock() called outside of any try nesting");
     }
     var callFrame = callStack.top();
     var tryState = unwindToBlock(_hasCriteria);
@@ -1300,11 +1291,11 @@ var expandStoredVars;
         selenium.invokedFromAsync= false;
         return {stateFromAsync: true};
     }
-    while (!tryState && selblocks.tcf.nestingLevel > -1 && callStack.length > 1) {
+    while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
       LOG.warn( 'bubbleToTryBlock: popping callStack from within while() loop.');
       callFrame = callStack.pop();
       restoreCallFrame( callFrame );
-      selblocks.LOG.info("function '" + callFrame.name + "' aborting due to error");
+      $$.LOG.info("function '" + callFrame.name + "' aborting due to error");
       tryState = unwindToBlock(_hasCriteria);
       if( !tryState && callFrame.frameFromAsync ) {
           LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
@@ -1320,33 +1311,33 @@ var expandStoredVars;
   var unwindToBlock= function unwindToBlock(_hasCriteria) {
     var tryState = activeBlockStack().unwindTo(_hasCriteria);
     if (tryState) {
-      selblocks.LOG.debug("unwound to: " + fmtTry(tryState));
+      $$.LOG.debug("unwound to: " + fmtTry(tryState));
     }
     return tryState;
   };
 
   // resume or conclude command/error bubbling
   Selenium.prototype.reBubble= function reBubble() {
-    if (selblocks.tcf.bubbling.mode === "error") {
-      if (selblocks.tcf.nestingLevel > -1) {
-        selblocks.LOG.debug("error-bubbling continuing...");
-        this.handleCommandError(selblocks.tcf.bubbling.error);
+    if ($$.tcf.bubbling.mode === "error") {
+      if ($$.tcf.nestingLevel > -1) {
+        $$.LOG.debug("error-bubbling continuing...");
+        this.handleCommandError($$.tcf.bubbling.error);
       }
       else {
-        selblocks.LOG.error("Error was not caught: '" + selblocks.tcf.bubbling.error.message + "'");
-        try { throw selblocks.tcf.bubbling.error; }
-        finally { selblocks.tcf.bubbling = null; }
+        $$.LOG.error("Error was not caught: '" + $$.tcf.bubbling.error.message + "'");
+        try { throw $$.tcf.bubbling.error; }
+        finally { $$.tcf.bubbling = null; }
       }
     }
     else { // mode === "command"
       if (isBubblable()) {
-        selblocks.LOG.debug("command-bubbling continuing...");
-        this.bubbleCommand(selblocks.tcf.bubbling.srcIdx, selblocks.tcf.bubbling._isStopCriteria);
+        $$.LOG.debug("command-bubbling continuing...");
+        this.bubbleCommand($$.tcf.bubbling.srcIdx, $$.tcf.bubbling._isStopCriteria);
       }
       else {
-        selblocks.LOG.info("command-bubbling complete - suspended command executing now " + fmtCmdRef(selblocks.tcf.bubbling.srcIdx));
-        setNextCommand(selblocks.tcf.bubbling.srcIdx);
-        selblocks.tcf.bubbling = null;
+        $$.LOG.info("command-bubbling complete - suspended command executing now " + fmtCmdRef($$.tcf.bubbling.srcIdx));
+        setNextCommand($$.tcf.bubbling.srcIdx);
+        $$.tcf.bubbling = null;
       }
     }
   };
@@ -1354,17 +1345,17 @@ var expandStoredVars;
   // instigate or transform bubbling, as appropriate
   Selenium.prototype.transitionBubbling= function transitionBubbling(_isContextBlockType)
   {
-    if (selblocks.tcf.bubbling) { // transform bubbling
-      if (selblocks.tcf.bubbling.mode === "error") {
-        selblocks.LOG.debug("Bubbling error: '" + selblocks.tcf.bubbling.error.message + "'"
+    if ($$.tcf.bubbling) { // transform bubbling
+      if ($$.tcf.bubbling.mode === "error") {
+        $$.LOG.debug("Bubbling error: '" + $$.tcf.bubbling.error.message + "'"
           + ", replaced with command " + fmtCmdRef(idxHere()));
-        selblocks.tcf.bubbling = { mode: "command", srcIdx: idxHere(), _isStopCriteria: _isContextBlockType };
+        $$.tcf.bubbling = { mode: "command", srcIdx: idxHere(), _isStopCriteria: _isContextBlockType };
         return true;
       }
       // mode === "command"
-      selblocks.LOG.debug("Command suspension " + fmtCmdRef(selblocks.tcf.bubbling.srcIdx)
+      $$.LOG.debug("Command suspension " + fmtCmdRef($$.tcf.bubbling.srcIdx)
         + ", replaced with " + fmtCmdRef(idxHere()));
-      selblocks.tcf.bubbling.srcIdx = idxHere();
+      $$.tcf.bubbling.srcIdx = idxHere();
       return true;
     }
     if (isBubblable(_isContextBlockType)) { // instigate bubbling
@@ -1377,7 +1368,7 @@ var expandStoredVars;
 
   // determine if bubbling is possible from this point outward
   var isBubblable= function isBubblable(_isContextBlockType) {
-    var canBubble = (selblocks.tcf.nestingLevel > -1);
+    var canBubble = ($$.tcf.nestingLevel > -1);
     if (canBubble) {
       var blkState = activeBlockStack().findEnclosing(
         //- determine if stackFrame is a try-block or the given type of block
@@ -1407,7 +1398,7 @@ var expandStoredVars;
       (tryDef.name ? "try '" + tryDef.name + "' " : "")
       + "@" + (tryState.idx+1)
       + ", " + tryState.execPhase + ".."
-      + " " + selblocks.tcf.nestingLevel + "n"
+      + " " + $$.tcf.nestingLevel + "n"
     );
   };
 
@@ -1417,8 +1408,8 @@ var expandStoredVars;
       return "";
     }
     var bbl = "";
-    if (selblocks.tcf.bubbling) {
-      bbl = "@" + (selblocks.tcf.bubbling.srcIdx+1) + " ";
+    if ($$.tcf.bubbling) {
+      bbl = "@" + ($$.tcf.bubbling.srcIdx+1) + " ";
     }
     var tryDef = blkDefFor(tryState);
     var catchDcl = localCommand( tryDef.catchIdx ).target;
@@ -1480,7 +1471,7 @@ var expandStoredVars;
             }
           }
           
-          selblocks.LOG.debug("localVarNames: " + localVarNames.join(','));
+          $$.LOG.debug("localVarNames: " + localVarNames.join(','));
           return localVarNames;
       }
       ,function doForInitialize(loop) { self.evalWithExpandedStoredVars(loop.initStmt); }          // initialize
@@ -1584,7 +1575,7 @@ var expandStoredVars;
   };
   Selenium.prototype.doLoadVars = function doLoadVars(filepath, selector)
   {
-    selblocks.LOG.warn("The loadVars command has been deprecated as of SelBlocks 2.0.2 and will be removed in future releases."
+    $$.LOG.warn("The loadVars command has been deprecated as of SelBlocks 2.0.2 and will be removed in future releases."
       + " Please use loadXmlVars instead.");
     Selenium.prototype.doLoadXmlVars(filepath, selector);
   };
@@ -1626,7 +1617,7 @@ var expandStoredVars;
     enterLoop(
       function doForJsonValidate(loop) {  // validate
           assert(jsonpath, " Requires a JSON file path or URL.");
-          loop.jsonReader = new selblocks.fn.JSONReader();
+          loop.jsonReader = new $$.fn.JSONReader();
           var localVarNames = loop.jsonReader.load(jsonpath);
           return localVarNames;
       }
@@ -1648,7 +1639,7 @@ var expandStoredVars;
     enterLoop(
       function doForXmlValidate(loop) {  // validate
           assert(xmlpath, " 'forXml' requires an XML file path or URL.");
-          loop.xmlReader = new selblocks.fn.XmlReader();
+          loop.xmlReader = new $$.fn.XmlReader();
           var localVarNames = loop.xmlReader.load(xmlpath);
           return localVarNames;
       }
@@ -1950,7 +1941,7 @@ var expandStoredVars;
           testCase.debugContext.debugIndex= activeCallFrame.debugIndex;
           editor.selDebugger.runner.currentTest.commandComplete= () => {};
           !activeCallFrame.onSuccess || window.setTimeout( ()=>activeCallFrame.onSuccess(storedVars._result), 0 );
-          selblocks.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", selblocks.handleAsExitTest);
+          $$.fn.interceptOnce(editor.selDebugger.runner.IDETestLoop.prototype, "resume", $$.handleAsExitTest);
           this.invokedFromAsync= false;
           LOG.debug( 'returnFromFunction: pop callStack');
           restoreCallFrame( callStack.pop(), activeCallFrame.frameFromAsync );
@@ -1965,15 +1956,13 @@ var expandStoredVars;
       return;
     }
     // intercept command processing and simply stop test execution instead of executing the next command
-    //Following has same effect as intercepting "resume" on editor.selDebugger.runner.IDETestLoop.prototype. Classic SelBlocks overrode it on selblocks.seleniumTestRunner.currentTest, but that is not available here.
-    selblocks.fn.interceptOnce(editor.selDebugger.runner.currentTest, "resume", selblocks.handleAsExitTest);
+    //Following has same effect as intercepting "resume" on editor.selDebugger.runner.IDETestLoop.prototype. Classic SelBlocks overrode it on $$.seleniumTestRunner.currentTest, but that is not available here.
+    $$.fn.interceptOnce(editor.selDebugger.runner.currentTest, "resume", $$.handleAsExitTest);
   };
 
 
   // ========= storedVars management =========
-    /** SelBlocksGlobal: This is used instead of SelBlocks' evalWithVars(expr)
-     * @member {function}
-     */
+    // SelBlocksGlobal: This is used instead of SelBlocks' evalWithVars(expr)
     Selenium.prototype.evalWithExpandedStoredVars= function evalWithExpandedStoredVars(expr) {
       try {
         typeof expr==='string' || expr===undefined || SeLiteMisc.fail( 'expr must be a string or undefined' );
@@ -2072,14 +2061,14 @@ var expandStoredVars;
 
   // TBD: make into throwable Errors
   var notifyFatalErr= function notifyFatalErr(msg, err) {
-    selblocks.LOG.error("Error " + msg);
-    selblocks.LOG.logStackTrace(err);
+    $$.LOG.error("Error " + msg);
+    $$.LOG.logStackTrace(err);
     throw err;
   };
   var notifyFatal= function notifyFatal(msg) {
     var err = new Error(msg);
-    selblocks.LOG.error("Error " + msg);
-    selblocks.LOG.logStackTrace(err);
+    $$.LOG.error("Error " + msg);
+    $$.LOG.logStackTrace(err);
     throw err;
   };
   var notifyFatalCmdRef= function notifyFatalCmdRef(idx, msg) { notifyFatal(fmtCmdRef(idx) + msg); };
@@ -2126,7 +2115,7 @@ var expandStoredVars;
   var fmtCmdRef= function fmtCmdRef(idx) {
     var test= localCase(idx);
     var commandIdx= localIdx(idx);
-    return "@" +test.file.path+ ': ' +(commandIdx+1) + ": [" + selblocks.fmtCmd( test.commands[commandIdx] )+ "]";
+    return "@" +test.file.path+ ': ' +(commandIdx+1) + ": [" + $$.fmtCmd( test.commands[commandIdx] )+ "]";
   };
 
   //================= utils ===============
@@ -2170,7 +2159,7 @@ var expandStoredVars;
       // SelBlocksGlobal: no support for globalContext.onServer
         fileUrl = urlFor(filepath);
       var xmlHttpReq = fileReader.getDocumentSynchronous(fileUrl);
-      selblocks.LOG.info("Reading from: " + fileUrl);
+      $$.LOG.info("Reading from: " + fileUrl);
 
       var fileObj = xmlHttpReq.responseXML; // XML DOM
       varsets = fileObj.getElementsByTagName("vars"); // HTMLCollection
@@ -2190,11 +2179,11 @@ var expandStoredVars;
     this.next = function next()
     {
       if (this.EOF()) {
-        selblocks.LOG.error("No more <vars> elements to read after element #" + varsetIdx);
+        $$.LOG.error("No more <vars> elements to read after element #" + varsetIdx);
         return;
       }
       varsetIdx++;
-      selblocks.LOG.debug(varsetIdx + ") " + XmlReader.serialize(varsets[curVars]));  // log each name & value
+      $$.LOG.debug(varsetIdx + ") " + XmlReader.serialize(varsets[curVars]));  // log each name & value
 
       var expected = XmlReader.countAttrs(varsets[0]);
       var found = XmlReader.countAttrs(varsets[curVars]);
@@ -2266,12 +2255,12 @@ var expandStoredVars;
         fileUrl = urlFor(filepath);
       // Following steps generate a false-positive error 'syntax error varset.json:1'. See http://selite.github.io/ThirdPartyIssues > https://bugzilla.mozilla.org/show_bug.cgi?id=1031985
       var xmlHttpReq = fileReader.getDocumentSynchronous(fileUrl);
-      selblocks.LOG.info("Reading from: " + fileUrl);
+      $$.LOG.info("Reading from: " + fileUrl);
 
       var fileObj = xmlHttpReq.responseText;
       fileObj = fileObj.replace("/\uFFFD/g", "").replace(/\0/g, "");
-      selblocks.LOG.info('evaluating JSON file' );
-      selblocks.LOG.info(fileObj);
+      $$.LOG.info('evaluating JSON file' );
+      $$.LOG.info(fileObj);
       
       try {
            varsets= JSON.parse(fileObj);
@@ -2284,7 +2273,7 @@ var expandStoredVars;
       if (varsets === null || varsets.length === 0) {
         throw new Error("A JSON object could not be loaded, or the file was empty.");
       }
-      selblocks.LOG.info('Has successfully read the JSON file');
+      $$.LOG.info('Has successfully read the JSON file');
 
       curVars = 0;
       varNames = JSONReader.attrNamesFor(varsets[0]);
@@ -2298,11 +2287,11 @@ var expandStoredVars;
     this.next = function next()
     {
       if (this.EOF()) {
-        selblocks.LOG.error("No more JSON objects to read after object #" + varsetIdx);
+        $$.LOG.error("No more JSON objects to read after object #" + varsetIdx);
         return;
       }
       varsetIdx++;
-      selblocks.LOG.debug(varsetIdx + ") " + JSONReader.serialize(varsets[curVars]));  // log each name & value
+      $$.LOG.debug(varsetIdx + ") " + JSONReader.serialize(varsets[curVars]));  // log each name & value
 
       var expected = JSONReader.countAttrs(varsets[0]);
       var found = JSONReader.countAttrs(varsets[curVars]);
@@ -2404,7 +2393,7 @@ var expandStoredVars;
     var absUrl;
     // htmlSuite mode of SRC? TODO is there a better way to decide whether in SRC mode?
     if (window.location.href.indexOf("selenium-server") >= 0) {
-      selblocks.LOG.debug("FileReader() is running in SRC mode");
+      $$.LOG.debug("FileReader() is running in SRC mode");
       // there's no need to absolutify the url, the browser will do that for you
       // when you make the request. The data may reside anywhere on the site, or
       // within the "virtual directory" created by the selenium server proxy.
@@ -2415,7 +2404,7 @@ var expandStoredVars;
     else {
       absUrl = absolutify(url, selenium.browserbot.baseUrl);
     }
-    selblocks.LOG.debug("FileReader() using URL to get file '" + absUrl + "'");
+    $$.LOG.debug("FileReader() using URL to get file '" + absUrl + "'");
     return absUrl;
   };
 
@@ -2459,7 +2448,7 @@ var expandStoredVars;
     return requester;
   };
 
-})();
+}(selblocks));
 
 (function() {
     // Assume single-line string only.
