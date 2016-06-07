@@ -7,33 +7,32 @@
 // SelBlocks name-space
 "use strict";
 
+/** @namespace selblocks*/
 var selblocks = {
    name: "selblocks"
   ,seleniumEnv: "ide"
   ,globalContext: this // alias for global Selenium scope
 };
 
-(function($$){
-  $$.fn = {};
-
-  /* Starting with FF4 lots of objects are in an XPCNativeWrapper,
+  /** Starting with FF4 lots of objects are in an XPCNativeWrapper,
    * and we need the underlying object for == and for..in operations.
+   * @member {function}
    */
-  $$.unwrapObject = function unwrapObject(obj) {
+  selblocks.unwrapObject = function unwrapObject(obj) {
     if (typeof(obj) === "undefined" || obj == null)
       return obj;
     if (obj.wrappedJSObject)
       return obj.wrappedJSObject;
     return obj;
   };
-
-  $$.fmtCmd = function fmtCmd(cmd) {
+  
+  /** @member {function}
+   * */
+  selblocks.fmtCmd = function fmtCmd(cmd) {
     var c = cmd.command!==undefined
         ? cmd.command.trimLeft() // trimLeft() is for commands indented with whitespace (when using SeLite ClipboardAndIndent)
         : cmd.command;
     if (cmd.target) { c += "|" + cmd.target; }
     if (cmd.value)  { c += "|" + cmd.value; }
     return c;
-  }
-
-}(selblocks));
+  };
