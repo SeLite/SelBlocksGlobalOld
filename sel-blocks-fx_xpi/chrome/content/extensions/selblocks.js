@@ -326,7 +326,7 @@ var expandStoredVars;
 
     // @TODO on insert, validate that function names are unique, i.e. no function overriding
   //=============== Call/Scope Stack handling ===============
-    /** @var object symbols {
+    /** @type {object} symbols Object {
      *    string equal to function's name => globIdx value
      *    string 'testCaseIndex:label-name' => globIdx value
      * }
