@@ -67,6 +67,11 @@
  **/
 
 "use strict";
+
+// Following assignments is purely for JSDoc.
+/** @namespace */
+Selenium= Selenium;
+
 // =============== global functions as script helpers ===============
 // getEval script helpers
 
@@ -1962,7 +1967,9 @@ var expandStoredVars;
 
 
   // ========= storedVars management =========
-    // SelBlocksGlobal: This is used instead of SelBlocks' evalWithVars(expr)
+    /** SelBlocksGlobal: This is used instead of SelBlocks' evalWithVars(expr)
+     * @member {function}
+     */
     Selenium.prototype.evalWithExpandedStoredVars= function evalWithExpandedStoredVars(expr) {
       try {
         typeof expr==='string' || expr===undefined || SeLiteMisc.fail( 'expr must be a string or undefined' );
