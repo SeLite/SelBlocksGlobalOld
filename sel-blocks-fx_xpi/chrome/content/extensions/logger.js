@@ -1,21 +1,26 @@
-// selbocks name-space
+// Based on traditional SelBlocks, with clarifications and without unneeded Logger.trace().
 "use strict";
 
 // Following assignments is purely for JSDoc.
 /** @namespace */
 selblocks= selblocks;
 
-/* LOG wrapper for SelBlocks-specific behavior
+/** LOG wrapper for SelBlocks-specific behavior
+ * @class
    */
 selblocks.Logger= function Logger() {};
-/** Log an error */
+/** Log an error. */
 selblocks.Logger.prototype.error = function (msg) { this.logit("error", msg); };
+/** Log a warning. */
 selblocks.Logger.prototype.warn  = function (msg) { this.logit("warn", msg); };
+/** Log at info level. */
 selblocks.Logger.prototype.info  = function (msg) { this.logit("info", msg); };
+/** Log at debug level. */
 selblocks.Logger.prototype.debug = function (msg) { this.logit("debug", msg); };
-selblocks.Logger.prototype.trace = function (msg) { this.logit("debug", msg); }; // selenium doesn't have trace level
 
+/** Log at given level. */
 selblocks.Logger.prototype.logit = function (logLevel, msg) {
+  // Following LOG is a global object from Selenium IDE. It's different to selblocks.LOG.
   LOG[logLevel]("[" + $$.name + "] " + msg);  // call the Selenium logger
 };
 

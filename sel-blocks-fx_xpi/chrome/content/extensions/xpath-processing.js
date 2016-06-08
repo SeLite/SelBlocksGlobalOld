@@ -23,11 +23,10 @@ selblocks.xp= {};
             , namespaceResolver
             , resultType || XPathResult.ANY_TYPE
             , resultObj);
-        $$.LOG.trace("XPATH Result: " + $$.xp.fmtXpathResultType(result) + " : " + xpath);
+        $$.LOG.debug("XPATH Result: " + $$.xp.fmtXpathResultType(result) + " : " + xpath);
       }
       catch (err) {
         $$.LOG.error("XPATH: " + xpath);
-        //$$.LOG.traceback(err);
         throw err;
       }
       if (isResultObjProvided)

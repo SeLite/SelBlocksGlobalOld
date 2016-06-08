@@ -528,7 +528,7 @@ var expandStoredVars;
   // SelBlocksGlobal: leaving the original indentation here, to make mergies easier:
   $$.fn.interceptAfter(Selenium.prototype, "reset", function resetInterceptedBySelBlocksGlobal()
   {
-    $$.LOG.trace("In tail intercept :: Selenium.reset()");
+    $$.LOG.debug("In tail intercept :: Selenium.reset()");
     // SelBlocksGlobal: no support for onServer
     try {
       compileSelBlocks();
