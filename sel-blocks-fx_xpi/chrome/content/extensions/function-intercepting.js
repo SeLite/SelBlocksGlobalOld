@@ -19,7 +19,7 @@ selblocks= selblocks;
   /** execute the given function before each call of the specified function
       @member {function}
   */
-  selblocks.fn.interceptBefore = function(targetObj, targetFnName, _fn) {
+  selblocks.fn.interceptBefore = function interceptBefore(targetObj, targetFnName, _fn) {
     var existing_fn = targetObj[targetFnName];
     targetObj[targetFnName] = function() {
       _fn.call(this);
@@ -29,7 +29,7 @@ selblocks= selblocks;
   /** execute the given function after each call of the specified function
       @member {function}
   */
-  selblocks.fn.interceptAfter = function(targetObj, targetFnName, _fnAfter) {
+  selblocks.fn.interceptAfter = function interceptAfter(targetObj, targetFnName, _fnAfter) {
     var existing_fn = targetObj[targetFnName];
     targetObj[targetFnName] = function() {
       existing_fn.call(this);
@@ -39,7 +39,7 @@ selblocks= selblocks;
   /** replace the specified function with the given function
       @member {function}
   */
-  selblocks.fn.interceptReplace = function(targetObj, targetFnName, _fn) {
+  selblocks.fn.interceptReplace = function interceptReplace(targetObj, targetFnName, _fn) {
     targetObj[targetFnName] = function() {
       //var existing_fn = targetObj[targetFnName] = _fn;
       return _fn.call(this);
@@ -52,7 +52,7 @@ selblocks= selblocks;
   /** replace the specified function, saving the original function on a stack
     @member {function}
   */
-  selblocks.fn.interceptPush = function(targetObj, targetFnName, _fnTemp, frameAttrs) {
+  selblocks.fn.interceptPush = function interceptPush(targetObj, targetFnName, _fnTemp, frameAttrs) {
 // selblocks.LOG.warn("interceptPush " + (frameAttrs ? frameAttrs : ""));
     var frame = {
        targetObj: targetObj
@@ -67,21 +67,21 @@ selblocks= selblocks;
   /** restore the most recent function replacement
       @member {function}
    */
-  selblocks.fn.interceptPop = function() {
+  selblocks.fn.interceptPop = function interceptPop() {
     var frame = selblocks.fn.interceptStack.pop();
 // selblocks.LOG.warn("interceptPop " + (frame.attrs ? frame.attrs : ""));
     frame.targetObj[frame.targetFnName] = frame.savedFn;
   };
   
   /** @member {function} */
-  selblocks.fn.getInterceptTop = function() {
+  selblocks.fn.getInterceptTop = function getInterceptTop() {
     return selblocks.fn.interceptStack[selblocks.fn.interceptStack.length-1];
   };
 
   /** replace the specified function, but then restore the original function as soon as it is call
       @member {function}
    */
-  selblocks.fn.interceptOnce = function(targetObj, targetFnName, _fn) {
+  selblocks.fn.interceptOnce = function interceptOnce(targetObj, targetFnName, _fn) {
     $$.fn.interceptPush(targetObj, targetFnName, function(){
       $$.fn.interceptPop(); // un-intercept
       var args = Array.prototype.slice.call(arguments);

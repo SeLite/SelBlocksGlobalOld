@@ -12,7 +12,7 @@ selblocks.InfixExpressionParser= {
     /** Parse a string into a list on the given delimiter character,
         respecting embedded quotes and brackets
     */
-    selblocks.InfixExpressionParser.splitList= function(str, delim)
+    selblocks.InfixExpressionParser.splitList= function splitList(str, delim)
     {
       var values = [];
       var prev = 0, cur = 0;
@@ -40,7 +40,7 @@ selblocks.InfixExpressionParser= {
 
     /** Scan to the given chr, skipping over intervening matching brackets
      */
-    selblocks.InfixExpressionParser.spanTo= function(str, i, chr)
+    selblocks.InfixExpressionParser.spanTo= function spanTo(str, i, chr)
     {
       while (str.charAt(i) != chr) {
         i = this.spanSub(str, i);
@@ -53,7 +53,7 @@ selblocks.InfixExpressionParser= {
 
     /** If character at the given index is a open/quote character, then scan to its matching close/quote
     */
-    selblocks.InfixExpressionParser.spanSub= function(str, i)
+    selblocks.InfixExpressionParser.spanSub= function spanSub(str, i)
     {
       if (i < str.length) {
         if (str.charAt(i) == "(") return this.spanTo(str, i+1, ")"); // recursively skip over intervening matching brackets
@@ -68,7 +68,7 @@ selblocks.InfixExpressionParser= {
     /** Format the given values array into a delimited list string
         An optional transformFunc operates on each value.
     */
-    selblocks.InfixExpressionParser.formatList= function(delim, values, left, transformFunc, right)
+    selblocks.InfixExpressionParser.formatList= function formatList(delim, values, left, transformFunc, right)
     {
       var buf = "";
       for (var i = 0; i < values.length; i++) {
