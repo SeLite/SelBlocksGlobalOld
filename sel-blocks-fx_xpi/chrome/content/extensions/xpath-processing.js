@@ -8,9 +8,10 @@ selblocks.xp= {};
 
 // selbocks name-space
 (function($$){
-    // Evaluate an xpathExpression against the given document object.
-    // The document is also the starting context, unless a contextNode is provided.
-    // Results are in terms of the most natural type, unless resultType specified.
+    /** Evaluate an xpathExpression against the given document object.
+        The document is also the starting context, unless a contextNode is provided.
+        Results are in terms of the most natural type, unless resultType specified.
+    */
     selblocks.xp.evaluateXpath= function(doc, xpath, contextNode, resultType, namespaceResolver, resultObj)
     {
       $$.xp.logXpathEval(doc, xpath, contextNode);
@@ -35,21 +36,24 @@ selblocks.xp= {};
       return result;
     };
 
-    // Find the first matching element
+    /** Find the first matching element
+    */
     selblocks.xp.selectElement= function(doc, xpath, contextNode) {
       var elems = $$.xp.selectElements(doc, xpath, contextNode);
       return (elems && elems.length > 0 ? elems[0] : null);
     };
 
-    // Find all matching elements
-    // TBD: make XPath engine choice configurable
+    /** Find all matching elements
+        TBD: make XPath engine choice configurable
+    */
     selblocks.xp.selectElements= function(doc, xpath, contextNode) {
       var elems = $$.xp.selectNodes(doc, xpath, contextNode);
       return elems;
     };
 
-    // Select a single node
-    // (analogous to xpath[1], without the axis-precedence gotchas)
+    /** Select a single node
+        (analogous to xpath[1], without the axis-precedence gotchas)
+    */
     selblocks.xp.selectNode= function(doc, xpath, contextNode, resultType) {
       var result = $$.xp.evaluateXpath(doc, xpath, contextNode, resultType || XPathResult.FIRST_ORDERED_NODE_TYPE);
       return $$.unwrapObject(result.singleNodeValue);
