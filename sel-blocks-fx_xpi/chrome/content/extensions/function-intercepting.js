@@ -17,7 +17,6 @@ selblocks= selblocks;
   
   //@TODO It looks like functions intercepted by the following can't have any parameters. -Peter Kehl
   /** execute the given function before each call of the specified function
-      @member {function}
   */
   selblocks.fn.interceptBefore = function interceptBefore(targetObj, targetFnName, _fn) {
     var existing_fn = targetObj[targetFnName];
@@ -27,7 +26,6 @@ selblocks= selblocks;
     };
   };
   /** execute the given function after each call of the specified function
-      @member {function}
   */
   selblocks.fn.interceptAfter = function interceptAfter(targetObj, targetFnName, _fnAfter) {
     var existing_fn = targetObj[targetFnName];
