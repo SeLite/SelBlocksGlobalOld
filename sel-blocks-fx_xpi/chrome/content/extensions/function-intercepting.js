@@ -11,7 +11,7 @@
 selblocks= selblocks;
 
   // name-space for function interception
-  /** @namespace selblocks.fn 
+  /** @namespace
   */
   selblocks.fn = {};
   
