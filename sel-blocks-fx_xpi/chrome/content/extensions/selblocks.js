@@ -68,9 +68,11 @@
 
 "use strict";
 
-// Following assignments is purely for JSDoc.
+// Following two assignments are purely for JSDoc.
 /** @namespace */
 Selenium= Selenium;
+/** @namespace */
+selblocks= selblocks;
 
 // =============== global functions as script helpers ===============
 // getEval script helpers
