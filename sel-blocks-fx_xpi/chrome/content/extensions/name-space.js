@@ -7,7 +7,7 @@
 // SelBlocks name-space
 "use strict";
 
-/** @namespace selblocks*/
+/** @namespace */
 var selblocks = {
    name: "selblocks"
   ,seleniumEnv: "ide"

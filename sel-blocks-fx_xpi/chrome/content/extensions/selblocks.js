@@ -69,7 +69,7 @@
 "use strict";
 
 // Following two assignments are purely for JSDoc.
-/** @namespace */
+/** @class */
 Selenium= Selenium;
 /** @namespace */
 selblocks= selblocks;

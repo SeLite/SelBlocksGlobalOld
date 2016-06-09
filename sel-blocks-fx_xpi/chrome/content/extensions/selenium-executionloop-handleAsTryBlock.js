@@ -7,7 +7,7 @@
 "use strict";
 
 // Following assignments is purely for JSDoc.
-/** @namespace selblocks */
+/** @namespace */
 selblocks= selblocks;
 
   // Based on a part of $$.handleAsTryBlock from SelBlocks
