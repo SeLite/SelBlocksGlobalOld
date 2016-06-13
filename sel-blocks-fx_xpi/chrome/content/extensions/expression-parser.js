@@ -1,18 +1,18 @@
 /** Parse basic expressions.
 */
 "use strict";
-// selbocks name-space
-(function($$){
 
-  $$.InfixExpressionParser =
-  {
+/** @namespace */
+selblocks.InfixExpressionParser= {
     _objname : "InfixExpressionParser"
     ,BRACKET_PAIRS : { "(": ")", "{": "}", "[": "]" }
     ,trimListValues : true
+};
 
-    //- Parse a string into a list on the given delimiter character,
-    // respecting embedded quotes and brackets
-    ,splitList : function(str, delim)
+    /** Parse a string into a list on the given delimiter character,
+        respecting embedded quotes and brackets
+    */
+    selblocks.InfixExpressionParser.splitList= function splitList(str, delim)
     {
       var values = [];
       var prev = 0, cur = 0;
@@ -36,10 +36,11 @@
         values.length = 0;
       }
       return values;
-    }
+    };
 
-    //- Scan to the given chr, skipping over intervening matching brackets
-    ,spanTo : function(str, i, chr)
+    /** Scan to the given chr, skipping over intervening matching brackets
+     */
+    selblocks.InfixExpressionParser.spanTo= function spanTo(str, i, chr)
     {
       while (str.charAt(i) != chr) {
         i = this.spanSub(str, i);
@@ -50,8 +51,9 @@
       return i;
     }
 
-    //- If character at the given index is a open/quote character, then scan to its matching close/quote
-    ,spanSub : function(str, i)
+    /** If character at the given index is a open/quote character, then scan to its matching close/quote
+    */
+    selblocks.InfixExpressionParser.spanSub= function spanSub(str, i)
     {
       if (i < str.length) {
         if (str.charAt(i) == "(") return this.spanTo(str, i+1, ")"); // recursively skip over intervening matching brackets
@@ -61,11 +63,12 @@
         else if (str.charAt(i) == '"') return str.indexOf('"', i+1);
       }
       return i;
-    }
+    };
 
-    //- Format the given values array into a delimited list string
-    // An optional transformFunc operates on each value.
-    ,formatList : function(delim, values, left, transformFunc, right)
+    /** Format the given values array into a delimited list string
+        An optional transformFunc operates on each value.
+    */
+    selblocks.InfixExpressionParser.formatList= function formatList(delim, values, left, transformFunc, right)
     {
       var buf = "";
       for (var i = 0; i < values.length; i++) {
@@ -76,7 +79,4 @@
         if (right) buf += right;
       }
       return buf;
-    }
-  };
-
-}(selblocks));
+    };

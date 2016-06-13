@@ -6,10 +6,12 @@
  */
 "use strict";
 
-// selbocks name-space
-(function($$){
+// Following assignments is purely for JSDoc.
+/** @namespace */
+selblocks= selblocks;
+
   // Based on a part of $$.handleAsTryBlock from SelBlocks
-  $$.testLoopResumeHandleFailedResult= function testLoopResumeHandleFailedResult() {
+  selblocks.testLoopResumeHandleFailedResult= function testLoopResumeHandleFailedResult() {
       // Selenium IDE doesn't stop running on verifications. Therefore verifications shouldn't trigger 'catch' clause. Hence we do suppress making the test case marked as failed, and we log at info level only.
       LOG.info( "try..catch..endTry suppressed verification failure from command: " + this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |");
       this.result.failed= false;
@@ -17,13 +19,13 @@
   };
   
   // Based on a part of $$.handleAsTryBlock from SelBlocks
-  $$.testLoopResumeHandleError= function testLoopResumeHandleError( e ) {
+  selblocks.testLoopResumeHandleError= function testLoopResumeHandleError( e ) {
       LOG.debug( 'testLoopResumeHandleError');
       var originalMessage= e.message; // Selenium IDE generates 'false' message for failed assertions, and those then would only match catch | 'false' |. Following makes them catchable by the actual assertion message.
       if( e.message==='false' ) {
           e.message= this.currentCommand.command + " | " + this.currentCommand.target + " | " + this.currentCommand.value + " |";
       }
-      if( /*isManaged*/$$.fn.getInterceptTop() && $$.fn.getInterceptTop().attrs.manageError(e) ) {
+      if( /*isManaged*/selblocks.fn.getInterceptTop() && selblocks.fn.getInterceptTop().attrs.manageError(e) ) {
         var message= originalMessage!=='false'
             ? '. The message: ' +originalMessage
             : '';
@@ -44,4 +46,3 @@
   };
   
   // Classic SelBlocks had handleAsTryBlock() here, but SelBlocks Global uses testLoopResumeHandleFailedResult() and testLoopResumeHandleError() instead. See editor.testLoopResume() in SeLite TestCase Debug Context.
-}(selblocks));

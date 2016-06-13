@@ -67,6 +67,13 @@
  **/
 
 "use strict";
+
+// Following two assignments are purely for JSDoc.
+/** @class */
+Selenium= Selenium;
+/** @namespace */
+selblocks= selblocks;
+
 // =============== global functions as script helpers ===============
 // getEval script helpers
 
@@ -326,7 +333,7 @@ var expandStoredVars;
 
     // @TODO on insert, validate that function names are unique, i.e. no function overriding
   //=============== Call/Scope Stack handling ===============
-    /** @var object symbols {
+    /** @type {object} symbols Object {
      *    string equal to function's name => globIdx value
      *    string 'testCaseIndex:label-name' => globIdx value
      * }
@@ -523,7 +530,7 @@ var expandStoredVars;
   // SelBlocksGlobal: leaving the original indentation here, to make mergies easier:
   $$.fn.interceptAfter(Selenium.prototype, "reset", function resetInterceptedBySelBlocksGlobal()
   {
-    $$.LOG.trace("In tail intercept :: Selenium.reset()");
+    $$.LOG.debug("In tail intercept :: Selenium.reset()");
     // SelBlocksGlobal: no support for onServer
     try {
       compileSelBlocks();
@@ -1962,7 +1969,9 @@ var expandStoredVars;
 
 
   // ========= storedVars management =========
-    // SelBlocksGlobal: This is used instead of SelBlocks' evalWithVars(expr)
+    /** SelBlocksGlobal: This is used instead of SelBlocks' evalWithVars(expr)
+     * @member {function}
+     */
     Selenium.prototype.evalWithExpandedStoredVars= function evalWithExpandedStoredVars(expr) {
       try {
         typeof expr==='string' || expr===undefined || SeLiteMisc.fail( 'expr must be a string or undefined' );
