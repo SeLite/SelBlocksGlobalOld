@@ -2605,7 +2605,6 @@ var expandStoredVars;
         }
     };
     
-    var originalGetEval= Selenium.prototype.getEval;
     Selenium.prototype.getEval = function getEval(script) {
         // Parameter script should be a primitive string. If it is an object, it is a result of exactly one expression within <>...<> (with no prefix & postfix) yeilding an object, or a result of @<>...<> (with an optional prefix/postfix) as processed by Selenium.prototype.preprocessParameter() as overriden by SelBlocksGlobal. Such parameters should not be used with getEval.
         if( typeof script==='object' ) {
@@ -2616,7 +2615,21 @@ var expandStoredVars;
             msg+= " See http://selite.github.io/EnhancedSelenese"
             SeLiteMisc.fail( msg );
         }
-        return originalGetEval.call( this, expandStoredVars(script) );
+        try {
+            // From traditional getEval() in chrome/content/selenium-core/scripts/selenium-api.js:
+            LOG.info('script is: ' + script);
+            var window = this.browserbot.getCurrentWindow();
+            var result = eval(script);
+            // Selenium RC doesn't allow returning null
+            if (null == result) return "null";
+            return result;
+        }
+        catch( e ) {
+            e= SeLiteMisc.withStackInMessage( e, true );
+            // Setting isSeleniumError makes Se Core log it via error() instead of exception(). If it called exception(), which uses describe(), it would double stack trace in the result log. See SeleniumError() in chrome/content/selenium-core/scripts/html.js.
+            e.isSeleniumError = true;
+            throw e;
+        }
     };
     
     /* We don't define Selenium.prototype.getPromise. When it used similar code to the following (i.e. returning an anonymous object with terminationCondition), then automatically-generated storePromise couldn't store the success result. Instead, it stored the anonymous object that contained terminationCondition.
