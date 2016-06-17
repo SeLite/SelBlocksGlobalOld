@@ -2616,10 +2616,10 @@ var expandStoredVars;
             SeLiteMisc.fail( msg );
         }
         try {
-            // From traditional getEval() in chrome/content/selenium-core/scripts/selenium-api.js:
+            // From traditional getEval() in chrome/content/selenium-core/scripts/selenium-api.js, but with expandStoredVars() added:
             LOG.info('script is: ' + script);
             var window = this.browserbot.getCurrentWindow();
-            var result = eval(script);
+            var result = eval( expandStoredVars(script) );
             // Selenium RC doesn't allow returning null
             if (null == result) return "null";
             return result;
