@@ -1972,7 +1972,7 @@ var expandStoredVars;
     /** SelBlocksGlobal: This is used instead of SelBlocks' evalWithVars(expr)
      * @member {function}
      */
-    Selenium.prototype.evalWithExpandedStoredVars= function evalWithExpandedStoredVars(expr) {
+    Selenium.prototype.evalWithExpandedStoredVars= function evalWithExpandedStoredVars(expr, noExtraErrorLogging=false) {
       try {
         typeof expr==='string' || expr===undefined || SeLiteMisc.fail( 'expr must be a string or undefined' );
         var expanded= expr!==undefined
@@ -1992,7 +1992,8 @@ var expandStoredVars;
         return result;
       }
       catch (err) {
-        notifyFatalErr(" While evaluating Javascript expression: " + expr+ " expanded as " +expanded, err);
+        noExtraErrorLogging || notifyFatalErr(" While evaluating Javascript expression: " + expr+ " expanded as " +expanded, err);
+        throw err;
       }
     };
     
@@ -2618,11 +2619,9 @@ var expandStoredVars;
         try {
             // From traditional getEval() in chrome/content/selenium-core/scripts/selenium-api.js, but with expandStoredVars() added:
             LOG.info('script is: ' + script);
-            var window = this.browserbot.getCurrentWindow();
-            var result = eval( expandStoredVars(script) );
+            return this.evalWithExpandedStoredVars( script );
             // Selenium RC doesn't allow returning null
-            if (null == result) return "null";
-            return result;
+            // However, SelBlocksGlobal does.
         }
         catch( e ) {
             e= SeLiteMisc.withStackInMessage( e, true );
