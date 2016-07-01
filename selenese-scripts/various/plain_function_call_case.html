@@ -13,7 +13,7 @@
 </thead><tbody>
 <tr>
 	<td>getEval</td>
-	<td>plain_function_has_run= undefined</td>
+	<td>this.plain_function_has_run= undefined</td>
 	<td></td>
 </tr>
 <tr>
@@ -23,9 +23,10 @@
 </tr>
 <tr>
 	<td>getEval</td>
-	<td>if( !plain_function_has_run ) throw &quot;plain_function didn't run, or it didn't set global variable plain_function_has_run&quot;</td>
+	<td>if( !this.plain_function_has_run ) throw &quot;plain_function didn't run, or it didn't set global variable plain_function_has_run&quot;</td>
 	<td></td>
 </tr>
+<!--When debugging,  this.plain_function_has_run is set only while running the case/suite. Hence don't inspect this.plain_function_has_run afterwards.-->
 </tbody></table>
 </body>
 </html>

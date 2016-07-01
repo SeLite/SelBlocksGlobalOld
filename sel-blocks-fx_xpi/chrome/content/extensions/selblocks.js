@@ -1979,20 +1979,16 @@ var expandStoredVars;
             ? expandStoredVars(expr)
             : undefined;
         LOG.debug( 'Selenium.prototype.evalWithExpandedStoredVars(): ' +expr+ ' expanded to: ' +expanded );
-        var window = this.browserbot.getCurrentWindow();
-        /* Firefox eval() doesn't return values of some expressions as expected, e.g.
-        // '{field: "value"}'. That's why I assign to local variable 'evalWithExpandedStoredVarsResult' first, and then I return it.
-           I add () parenthesis, so that if the the expr contains multiple expressions separated by comma, then this uses the value of the last expression.
-        */
+        var window = this.browserbot.getCurrentWindow(); // So that the script can access 'window'
         // EXTENSION REVIEWERS: Use of eval is consistent with the Selenium extension itself.
         // Scripted expressions run in the Selenium window, separate from browser windows.
         // Global functions are intentional features provided for use by end user's in their Selenium scripts.
-        var result = eval( "var evalWithExpandedStoredVarsResult= (" +expanded+ "); evalWithExpandedStoredVarsResult" );
+        var result = eval( expanded );
         LOG.debug( 'result: ' +typeof result+ ': ' +SeLiteMisc.objectToString(result, 2) );
         return result;
       }
       catch (err) {
-        noExtraErrorLogging || notifyFatalErr(" While evaluating Javascript expression: " + expr+ " expanded as " +expanded, err);
+        noExtraErrorLogging || notifyFatalErr(" While evaluating Javascript expression: " + expr+ " expanded as: " +expanded, err);
         throw err;
       }
     };
@@ -2619,7 +2615,10 @@ var expandStoredVars;
         try {
             // From traditional getEval() in chrome/content/selenium-core/scripts/selenium-api.js, but with expandStoredVars() added:
             LOG.info('script is: ' + script);
-            return this.evalWithExpandedStoredVars( script );
+            var result= this.evalWithExpandedStoredVars( script );
+            return (result===undefined || result===null) && /(Accessor|Assert)Handler\.prototype\.execute/.test( new Error().stack )
+                ? ""+result // Only needed when this is called as Selenese getEval/assertEval/verifyEval, but not as storeEval.
+                : result; // This honours objects with: storeEval | expression-that-evaluates-to-object
             // Selenium RC doesn't allow returning null
             // However, SelBlocksGlobal does.
         }
