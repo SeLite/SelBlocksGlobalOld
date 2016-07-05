@@ -833,7 +833,7 @@ var expandStoredVars;
           + "'end" + pend.cmdName.substr(0, 1).toUpperCase() + pend.cmdName.substr(1) + "'"
         );
       }
-      throw new SyntaxError(cmdErrors.join("; "));
+      throw new SyntaxError(cmdErrors.join("; "));//@TODO report in Se IDE log & stop the test suite run - instead of this throw. TODO test with Run All Favorites.
     }
   }; // end of compileSelBlocksTestCase()
 
@@ -1299,13 +1299,13 @@ var expandStoredVars;
         return {stateFromAsync: true};
     }
     while (!tryState && $$.tcf.nestingLevel > -1 && callStack.length > 1) {
-      LOG.warn( 'bubbleToTryBlock: popping callStack from within while() loop.');
+      LOG.debug( 'bubbleToTryBlock: popping callStack from within while() loop.');
       callFrame = callStack.pop();
       restoreCallFrame( callFrame );
       $$.LOG.info("function '" + callFrame.name + "' aborting due to error");
       tryState = unwindToBlock(_hasCriteria);
       if( !tryState && callFrame.frameFromAsync ) {
-          LOG.warn('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
+          LOG.debug('bubbleToTryBlock: deeper level invokedFromJavascript. popping callStack');
           callStack.pop();
           selenium.invokedFromAsync= false;
           return {stateFromAsync: true};
@@ -1782,7 +1782,7 @@ var expandStoredVars;
     var activeCallFrame = callStack.top();
     if (activeCallFrame.isReturning && activeCallFrame.returnIdx === idxHere()) {
       assert( !invokedFromJavascript, "Should have invokedFromJavascript undefined/false." );
-      LOG.warn( 'doCall: isReturning: popping call Stack');
+      LOG.debug( 'doCall: isReturning: popping call Stack');
       // returning from completed function
       var popped= callStack.pop();
       loop.commandError= popped.originalCommandError;
