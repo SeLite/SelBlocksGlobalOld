@@ -2761,5 +2761,9 @@ var expandStoredVars;
         return Downloads.fetch( url, filePath );
     };
     
+    Selenium.prototype.doBreakPoint= function doBreakPoint() {
+        // Based on getInterval() in Selenium IDE's chrome/content/debugger.js
+        editor.selDebugger.setState(Debugger.PAUSED);
+    };
     //@TODO Override/disable promiseAndWait, storePromiseValueAndWait
 })();

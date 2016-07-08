@@ -408,4 +408,7 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
+<function name="breakPoint">
+    <comment>Stop execution here as if it were a breakpoint. It allows the user to resume execution via Selenium IDE GUI.</comment>
+</function>
 </apidoc>
