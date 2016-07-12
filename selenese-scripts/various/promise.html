@@ -69,14 +69,14 @@
 	<td></td>
 </tr>
 <!--    TODO-->
-<!--        getEval() that times out. It caused Selenium IDE 2.9.1 and Firefox 46.0.1 run away/freeze!-->
+<!--    getEval() that times out. It caused Selenium IDE 2.9.1 and Firefox 46.0.1 run away/freeze!-->
 <tr>
-	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
 	<td>var nowMilliSec=Date.now(); while( Date.now()-nowMilliSec&lt;selenium.defaultTimeout+100 ); LOG.info('getEval finished while() loop, even though it was overtime.');</td>
 	<td></td>
 </tr>
 <tr>
-	<td>promise</td>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;promise</td>
 	<td>new Promise( ()=&gt;'never' )</td>
 	<td></td>
 </tr>
@@ -98,7 +98,7 @@
 	<td></td>
 </tr>
 <tr>
-	<td>storePromiseValue</td>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;storePromiseValue</td>
 	<td>new Promise( ()=&gt;{} )</td>
 	<td>never</td>
 </tr>
