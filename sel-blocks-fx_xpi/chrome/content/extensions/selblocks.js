@@ -536,7 +536,8 @@ var expandStoredVars;
       compileSelBlocks();
     }
     catch (err) {
-      notifyFatalErr("In " + err.fileName + " @" + err.lineNumber + ": " + err);
+      // Don't run this.doExitTest(); here - because it uses $$.tcf, which wasn't set yet.
+      notifyFatalErr("In " + err.fileName + " @" + err.lineNumber + ": " + err, err);
     }
     callStack = new Stack();
     callStack.push({ blockStack: new Stack() }); // top-level execution state
