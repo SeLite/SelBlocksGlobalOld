@@ -145,6 +145,34 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
+<function name="do">
+    <comment>Conditional loop statement with a condition at the end. It repeats all statements up to the matching <code>endDo</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endDo">
+    <param name="condExpr">Condition expression.
+    </param>
+    <comment>End of the matching <code>do</code>. It keeps repeating all statements since the matching <code>do</code> as far as condition <code>condExpr</code> evaluates to true (compared non-strictly).
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="doPromise">
+    <comment>Conditional Promise-based loop statement with a condition at the end. It repeats all statements up to the matching <code>endDoPromise</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
+<function name="endDoPromise">
+    <param name="condExpr">A Javascript expression that evaluates to a <code>Promise</code>. Its result (once resolved) determines whether to continue the loop, or whether to finish it.
+    </param>
+    <comment>End of the matching <code>doPromise</code>. It evaluates <code>condExpr</code>, which should return a <code>Promise</code> object. As far as the promise resolves to true (compared non-strictly), it keeps running all statements since the matching <code>doPromise</code>.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
+</function>
 <function name="for">
     <param name="forSpec">Composite defining loop bounds and repetition condition,
         C/C++/Java/Javascript/PHP-like,

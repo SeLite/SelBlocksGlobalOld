@@ -767,7 +767,7 @@ var expandStoredVars;
             }
             break;
 
-          case "while":    case "for":    case "forEach": case "foreach": case "forIterator": case "forIterable": case "forJson":    case "forXml":
+          case "while":    case "whilePromise":    case "do":     case "doPromise":    case "for":    case "forEach": case "foreach": case "forIterator": case "forIterable": case "forJson":    case "forXml":
             assertNotAndWaitSuffix(i);
             lexStack.push(blockDefs.init(i, { nature: "loop" }));
             break;
@@ -776,7 +776,7 @@ var expandStoredVars;
             assertCmd(i, lexStack.findEnclosing(Stack.isLoopBlock), ", is not valid outside of a loop");
             blockDefs.init(i, { beginIdx: lexStack.top().idx }); // -> begin
             break;
-          case "endWhile": case "endFor": case "endForeach": case "endForEach": case "endForIterator": case "endForIterable": case "endForJson": case "endForXml":
+          case "endWhile": case "endWhilePromise":    case "endDo":   case "endDoPromise":    case "endFor": case "endForeach": case "endForEach": case "endForIterator": case "endForIterable": case "endForJson": case "endForXml":
             assertNotAndWaitSuffix(i);
             expectedCmd = curCmd.substr(3).toLowerCase();
             assertBlockIsPending(lexStack, expectedCmd, i);
@@ -1423,14 +1423,15 @@ var expandStoredVars;
     var catchDcl = localCommand( tryDef.catchIdx ).target;
     return " :: " + bbl + catchDcl;
   };
-  
   // ================================================================================
+  
+  // helper function used by loops while...endWhile, whilePromise...endWhilePromise
   Selenium.prototype.actionWhile = function actionWhile( condExpr, withPromise=false )
   {
     var self= this;
     return enterLoop(
       function doWhileValidate() {    // validate
-          assert(condExpr, " 'while' requires a condition expression.");
+          assert(condExpr, " 'while' and 'whilePromise' requires a condition expression.");
           self.assertCompilable("", condExpr, ";", "Invalid condition");
           return null;
       }
@@ -1450,8 +1451,37 @@ var expandStoredVars;
   Selenium.prototype.doEndWhile = Selenium.prototype.doEndWhilePromise = function doEndWhile() {
     iterateLoop();
   };
-
   // ================================================================================
+  
+  // helper function used by loops do...endDo, doPromise...endDoPromise
+  // @TODO add to ClipboardAndIndent; also other promise-based commands: whilePromise, ifPromise; forEach, forIterable
+  Selenium.prototype.actionDo = function actionDo( withPromise=false )
+  {
+    var self= this;
+    var firstRun= true;
+    return enterLoop(
+      function doDoValidate() { return null; }
+      ,function doDoInitialize() { } // initialize
+      ,function doDoContinueCheck( loopState ) { return firstRun || self.evalWithExpandedStoredVars( loopState.condExpr ); }
+      ,function doDoIterate() { firstRun= false; }
+      ,withPromise
+    );
+  };
+  Selenium.prototype.doDo = function doDo() {
+      return this.actionDo();
+  };
+  Selenium.prototype.doDoPromise = function doDoPromise() {
+      return this.actionDo(true );
+  };
+  
+  Selenium.prototype.doEndDo = Selenium.prototype.doEndDoPromise = function doEndDo( condExpr ) {
+    assert(condExpr, " 'do' and 'doPromise' requires a condition expression.");
+    var loopState = activeBlockStack().top();
+    loopState.condExpr= condExpr;
+    iterateLoop();
+  };
+  // ================================================================================
+  
   Selenium.prototype.doFor = function doFor(forSpec)
   {
     var self= this;
@@ -1677,7 +1707,7 @@ var expandStoredVars;
   {
     assertRunning();
     var loopState;
-    if (!activeBlockStack().isHere()) {
+    if (!activeBlockStack().isHere()) { 
       // loop begins
       loopState = { idx: idxHere() };
       activeBlockStack().push(loopState);
