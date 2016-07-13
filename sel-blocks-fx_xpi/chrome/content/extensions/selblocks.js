@@ -2121,8 +2121,8 @@ var expandStoredVars;
   };
   var fmtCmdRef= function fmtCmdRef(idx) {
     var test= localCase(idx);
-    var commandIdx= localIdx(idx);
-    return "@" +test.file.path+ ': ' +(commandIdx+1) + ": [" + $$.fmtCmd( test.commands[commandIdx] )+ "]";
+    var commandIdx= localIdx(idx);debugger;
+    return "@" +(test.file ? test.file.path : 'unsaved test case')+ ': ' +(commandIdx+1) + ": [" + $$.fmtCmd( test.commands[commandIdx] )+ "]";
   };
 
   //================= utils ===============
