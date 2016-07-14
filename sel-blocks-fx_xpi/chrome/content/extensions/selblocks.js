@@ -1454,7 +1454,6 @@ var expandStoredVars;
   // ================================================================================
   
   // helper function used by loops do...endDo, doPromise...endDoPromise
-  // @TODO add to ClipboardAndIndent; also other promise-based commands: whilePromise, ifPromise; forEach, forIterable
   Selenium.prototype.actionDo = function actionDo( withPromise=false )
   {
     var self= this;
