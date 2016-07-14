@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://change-this-to-the-site-you-are-testing/" />
+<title>whilePromise_case</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">whilePromise_case</td></tr>
+</thead><tbody>
+<tr>
+	<td>storeEval</td>
+	<td>0</td>
+	<td>numberOfLoopRuns</td>
+</tr>
+<tr>
+	<td>whilePromise</td>
+	<td>new Promise( resolve =&gt; window.setTimeout( ()=&gt;resolve($numberOfLoopRuns===0), Math.min(150, selenium.defaultTimeout-150) ) )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>$numberOfLoopRuns++</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endWhilePromise</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertEval</td>
+	<td>$numberOfLoopRuns</td>
+	<td>1</td>
+</tr>
+<!---->
+<tr>
+	<td>whilePromise</td>
+	<td>new Promise( resolve =&gt; window.setTimeout( ()=&gt;resolve($numberOfLoopRuns&lt;4), Math.min(150, selenium.defaultTimeout-150) ) )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>$numberOfLoopRuns++</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endWhilePromise</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertEval</td>
+	<td>$numberOfLoopRuns</td>
+	<td>4</td>
+</tr>
+
+</tbody></table>
+</body>
+</html>
