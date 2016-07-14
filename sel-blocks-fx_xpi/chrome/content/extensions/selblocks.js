@@ -767,7 +767,7 @@ var expandStoredVars;
             }
             break;
 
-          case "while":    case "whilePromise":    case "do":     case "doPromise":    case "for":    case "forEach": case "foreach": case "forIterator": case "forIterable": case "forJson":    case "forXml":
+          case "while":    case "whilePromise":    case "repeat":     case "repeatPromise":    case "for":    case "forEach": case "foreach": case "forIterator": case "forIterable": case "forJson":    case "forXml":
             assertNotAndWaitSuffix(i);
             lexStack.push(blockDefs.init(i, { nature: "loop" }));
             break;
@@ -776,7 +776,7 @@ var expandStoredVars;
             assertCmd(i, lexStack.findEnclosing(Stack.isLoopBlock), ", is not valid outside of a loop");
             blockDefs.init(i, { beginIdx: lexStack.top().idx }); // -> begin
             break;
-          case "endWhile": case "endWhilePromise":    case "endDo":   case "endDoPromise":    case "endFor": case "endForeach": case "endForEach": case "endForIterator": case "endForIterable": case "endForJson": case "endForXml":
+          case "endWhile": case "endWhilePromise":    case "endFor": case "endForeach": case "endForEach": case "endForIterator": case "endForIterable": case "endForJson": case "endForXml":
             assertNotAndWaitSuffix(i);
             expectedCmd = curCmd.substr(3).toLowerCase();
             assertBlockIsPending(lexStack, expectedCmd, i);
@@ -786,6 +786,16 @@ var expandStoredVars;
             blockDefs.init(i, { beginIdx: beginDef.idx }); // end -> begin
             break;
 
+          case "until":   case "untilPromise":
+            assertNotAndWaitSuffix(i);
+            expectedCmd = 'repeat' +curCmd.substr(5).toLowerCase();
+            assertBlockIsPending(lexStack, expectedCmd, i);
+            var beginDef = lexStack.pop();
+            assertMatching(beginDef.cmdName.toLowerCase(), expectedCmd, i, beginDef.idx);
+            blkDefFor(beginDef).endIdx = i;                // begin -> end
+            blockDefs.init(i, { beginIdx: beginDef.idx }); // end -> begin
+            break;
+            
           case "loadJsonVars": case "loadXmlVars":
             assertNotAndWaitSuffix(i);
             break;
@@ -1453,30 +1463,45 @@ var expandStoredVars;
   };
   // ================================================================================
   
-  // helper function used by loops do...endDo, doPromise...endDoPromise
-  Selenium.prototype.actionDo = function actionDo( withPromise=false )
+  // helper function used by loops repeat...until, repeatPromise...untilPromise
+  Selenium.prototype.actionRepeat = function actionRepeat( withPromise=false )
   {
     var self= this;
     var firstRun= true;
     return enterLoop(
-      function doDoValidate() { return null; }
-      ,function doDoInitialize() { } // initialize
-      ,function doDoContinueCheck( loopState ) { return firstRun || self.evalWithExpandedStoredVars( loopState.condExpr ); }
-      ,function doDoIterate() { firstRun= false; }
+      function doRepeatValidate() { return null; }
+      ,function doRepeatInitialize() { } // initialize
+      ,function doRepeatContinueCheck( loopState ) {
+          return firstRun
+              ? (withPromise
+                    ? Promise.resolve(true)
+                    : true
+                )
+              : (withPromise
+                    ? new Promise(
+                        resolve =>
+                        self.evalWithExpandedStoredVars( loopState.negativeCondExpr ).then(
+                            value => resolve(!value)
+                        )
+                      )
+                    : !self.evalWithExpandedStoredVars( loopState.negativeCondExpr )
+                );
+      }
+      ,function doRepeatIterate() { firstRun= false; }
       ,withPromise
     );
   };
-  Selenium.prototype.doDo = function doDo() {
-      return this.actionDo();
+  Selenium.prototype.doRepeat = function doRepeat() {
+      return this.actionRepeat();
   };
-  Selenium.prototype.doDoPromise = function doDoPromise() {
-      return this.actionDo(true );
+  Selenium.prototype.doRepeatPromise = function doRepeatPromise() {
+      return this.actionRepeat(true );
   };
   
-  Selenium.prototype.doEndDo = Selenium.prototype.doEndDoPromise = function doEndDo( condExpr ) {
-    assert(condExpr, " 'do' and 'doPromise' requires a condition expression.");
+  Selenium.prototype.doUntil = Selenium.prototype.doUntilPromise = function doUntil( negativeCondExpr ) {
+    assert(negativeCondExpr, " 'until' and 'untilPromise' requires a condition expression.");
     var loopState = activeBlockStack().top();
-    loopState.condExpr= condExpr;
+    loopState.negativeCondExpr= negativeCondExpr;
     iterateLoop();
   };
   // ================================================================================
@@ -1721,7 +1746,7 @@ var expandStoredVars;
       _iterFunc(loopState);
     }
     
-    return Selenium.prototype.handlePotentialPromise(
+    return selenium.handlePotentialPromise(
         _condFunc(loopState),
         value => {
             if( !value ) {
@@ -2150,7 +2175,7 @@ var expandStoredVars;
   };
   var fmtCmdRef= function fmtCmdRef(idx) {
     var test= localCase(idx);
-    var commandIdx= localIdx(idx);debugger;
+    var commandIdx= localIdx(idx);
     return "@" +(test.file ? test.file.path : 'unsaved test case')+ ': ' +(commandIdx+1) + ": [" + $$.fmtCmd( test.commands[commandIdx] )+ "]";
   };
 

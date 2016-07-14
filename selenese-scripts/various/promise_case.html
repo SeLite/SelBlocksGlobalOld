@@ -44,7 +44,7 @@
 <!---->
 <tr>
 	<td>storeEval</td>
-	<td>Math.max(0, selenium.defaultTimeout-150)</td>
+	<td>Math.min(150, selenium.defaultTimeout-150)</td>
 	<td>shortPause</td>
 </tr>
 <tr>
@@ -63,6 +63,12 @@
 	<td></td>
 </tr>
 <!---->
+<!--Following applies only to the rest of this case-->
+<tr>
+	<td>getEval</td>
+	<td>selenium.defaultTimeout= 150;</td>
+	<td></td>
+</tr>
 <tr>
 	<td>if</td>
 	<td>false</td>

@@ -17,7 +17,7 @@
 	<td>numberOfLoopRuns</td>
 </tr>
 <tr>
-	<td>do</td>
+	<td>repeat</td>
 	<td></td>
 	<td></td>
 </tr>
@@ -27,8 +27,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>endDo</td>
-	<td>false</td>
+	<td>until</td>
+	<td>true</td>
 	<td></td>
 </tr>
 <tr>
@@ -38,7 +38,7 @@
 </tr>
 <!---->
 <tr>
-	<td>do</td>
+	<td>repeat</td>
 	<td></td>
 	<td></td>
 </tr>
@@ -48,8 +48,56 @@
 	<td></td>
 </tr>
 <tr>
-	<td>endDo</td>
-	<td>$numberOfLoopRuns&lt;4</td>
+	<td>until</td>
+	<td>$numberOfLoopRuns&gt;=4</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertEval</td>
+	<td>$numberOfLoopRuns</td>
+	<td>4</td>
+</tr>
+<!---->
+<tr>
+	<td>storeEval</td>
+	<td>0</td>
+	<td>numberOfLoopRuns</td>
+</tr>
+<tr>
+	<td>repeatPromise</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>$numberOfLoopRuns++</td>
+	<td></td>
+</tr>
+<!--    new Promise( resolve => window.setTimeout( ()=>{debugger;resolve(true)},Math.max(0, selenium.defaultTimeout-150) ) )-->
+<tr>
+	<td>untilPromise</td>
+	<td>new Promise( resolve =&gt; window.setTimeout( ()=&gt;{debugger;resolve(true)}, Math.min(150, selenium.defaultTimeout-150) ) )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertEval</td>
+	<td>$numberOfLoopRuns</td>
+	<td>1</td>
+</tr>
+<!---->
+<tr>
+	<td>repeatPromise</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>$numberOfLoopRuns++</td>
+	<td></td>
+</tr>
+<tr>
+	<td>untilPromise</td>
+	<td>new Promise( resolve =&gt; window.setTimeout( ()=&gt;{debugger;resolve($numberOfLoopRuns&gt;=4)}, Math.min(150, selenium.defaultTimeout-150) ) )</td>
 	<td></td>
 </tr>
 <tr>

@@ -145,30 +145,30 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
-<function name="do">
-    <comment>Conditional loop statement with a condition at the end. It repeats all statements up to the matching <code>endDo</code>.
+<function name="repeat">
+    <comment>Conditional loop statement with a condition at the end. It repeats all statements up to the matching <code>until</code>.
         <br/>
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
-<function name="endDo">
-    <param name="condExpr">Condition expression.
+<function name="until">
+    <param name="negativeCondExpr">Negative condition expression.
     </param>
-    <comment>End of the matching <code>do</code>. It keeps repeating all statements since the matching <code>do</code> as far as condition <code>condExpr</code> evaluates to true (compared non-strictly).
+    <comment>End of the matching <code>repeat</code>. It keeps repeating all statements since the matching <code>repeat</code> until condition <code>negativeCondExpr</code> evaluates to true (compared non-strictly).
         <br/>
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
-<function name="doPromise">
-    <comment>Conditional Promise-based loop statement with a condition at the end. It repeats all statements up to the matching <code>endDoPromise</code>.
+<function name="repeatPromise">
+    <comment>Conditional Promise-based loop statement with a condition at the end. It repeats all statements up to the matching <code>untilPromise</code>.
         <br/>
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
-<function name="endDoPromise">
-    <param name="condExpr">A Javascript expression that evaluates to a <code>Promise</code>. Its result (once resolved) determines whether to continue the loop, or whether to finish it.
+<function name="untilPromise">
+    <param name="negativeCondExpr">A Javascript expression that evaluates to a <code>Promise</code>. Its result (once resolved) determines whether to stop the loop, or whether to continue it.
     </param>
-    <comment>End of the matching <code>doPromise</code>. It evaluates <code>condExpr</code>, which should return a <code>Promise</code> object. As far as the promise resolves to true (compared non-strictly), it keeps running all statements since the matching <code>doPromise</code>.
+    <comment>End of the matching <code>repeatPromise</code>. It evaluates <code>negativeCondExpr</code>, which should return a <code>Promise</code> object. Once the promise resolves to <code>true</code> (compared non-strictly), the loop stops running all statements since the matching <code>repeatPromise</code>. As far as it resolves to <code>false</code>, the loop continues. However, if the promise fails (rather than resolves), this raises a catcheable error.
         <br/>
         This command is a part of SeLite SelBlocks Global.
     </comment>
