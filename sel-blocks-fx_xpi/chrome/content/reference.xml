@@ -179,9 +179,6 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         in 3 parts separated by semicolons: <code>initiation; condition; iteration</code>.
         For example: <code>$i=0; $i&lt;=100; $i++</code>
     </param>
-    <param name="localVarsSpec">List of variable(s) used in either initiation, condition
-        or iteration parts of parameter <code>forSpec</code>.
-    </param>
     <comment>Loop with initiation, condition for repetition and iteration.
         First, it evaluates the initiation part of parameter <code>forSpec</code>.
         Then it evaluates the condition part of <code>forSpec</code>. If true (compared non-strictly), it runs any
