@@ -357,6 +357,15 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         <br/>
         This command is a part of SeLite SelBlocks Global.
     </comment>
+    <param name="funcName">
+        Name of the function.
+    </param>
+</function>
+<function name="script">
+    <comment>Obsolete. Use <code>function</code> instead.</comment>
+</function>
+<function name="endScript">
+    <comment>Obsolete. Use <code>endFunction</code> instead.</comment>
 </function>
 <function name="return">
     <param name="value">Value/expression to evaluate and return.</param>

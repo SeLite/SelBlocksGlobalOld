@@ -1958,6 +1958,9 @@ var expandStoredVars;
       setNextCommand(funcDef.endIdx);
     }
   };
+  Selenium.prototype.doScript = function doScript(scrName) {
+    this.doFunction(scrName);
+  };
   Selenium.prototype.doReturn = function doReturn(value) {
     this.returnFromFunction(null, value);
   };
@@ -2587,9 +2590,10 @@ var expandStoredVars;
        as documented at http://selite.github.io/EnhancedSelenese.
        If the user wants to actually pass a string '<>' to the result, she or he has to work around this (e.g. by generating it in a Javascript expression).
        The 3rd captured group - the postfix - is guaranteed not to end with # or @  that would be just before the next occurrence of <>...<> (if any)
-    Levels of regex. parenthesis 12  3    3 2 1  12  3    3 2 1  12  3    3          3    32 1
+    Levels of regex. parenthesis 12  3    3 2 1  12  3    3 2 1  12  3    3              3    32 1
+    1-based index of capturing parenthesis       1               2     
     */
-    var enclosedBySpecialPairs= /((?:(?!<>).)*)<>((?:(?!<>).)+)<>((?:(?!<>)[^#@]|[#@](?!<>))*)/g;
+    var enclosedBySpecialPairs= /((?:(?!<>).)*)<>((?:(?!<>).)+)<>((?:(?!<>)[^#@\\]|[#@\\](?!<>))*)/g;
     
     /** A head intercept of preprocessParameter() from chrome/content/selenium-core/scripts/selenium-api.js. It implements http://selite.github.io/EnhancedSelenese. */
     Selenium.prototype.preprocessParameter = function selBlocksGlobalPreprocessParameter(whole) {
@@ -2624,7 +2628,7 @@ var expandStoredVars;
              * */
             var alreadyProcessedDoubledSpecialPairs= false;
             var result= '';
-            for(match= enclosedBySpecialPairs.exec(whole); match; match= enclosedBySpecialPairs.exec(whole) ) {
+            for( match= enclosedBySpecialPairs.exec(whole); match; match= enclosedBySpecialPairs.exec(whole) ) {
                 var prefix= originalPreprocessParameter.call( this, match[1] ); // That calls Selenium.prototype.replaceVariables()
                 var postfix= originalPreprocessParameter.call( this, match[3] ); // That calls Selenium.prototype.replaceVariables()
                 var value= this.evalWithExpandedStoredVars( this.replaceVariables(match[2]) );
