@@ -2593,7 +2593,7 @@ var expandStoredVars;
     Levels of regex. parenthesis 12  3    3 2 1  12  3    3 2 1  12  3    3              3    32 1
     1-based index of capturing parenthesis       1               2     
     */
-    var enclosedBySpecialPairs= /((?:(?!<>).)*)<>((?:(?!<>).)+)<>((?:(?!<>)[^#@\\]|[#@\\](?!<>))*)/g;
+    var enclosedBySpecialPairs= /((?:(?!<>).)*)<>((?:(?!<>).)+)<>((?:(?!<>)[^@\\]|[@\\](?!<>))*)/g;
     
     /** A head intercept of preprocessParameter() from chrome/content/selenium-core/scripts/selenium-api.js. It implements http://selite.github.io/EnhancedSelenese. */
     Selenium.prototype.preprocessParameter = function selBlocksGlobalPreprocessParameter(whole) {
