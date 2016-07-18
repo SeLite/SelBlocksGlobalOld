@@ -80,8 +80,8 @@ selblocks= selblocks;
       @member {function}
    */
   selblocks.fn.interceptOnce = function interceptOnce(targetObj, targetFnName, _fn) {
-    $$.fn.interceptPush(targetObj, targetFnName, function(){
-      $$.fn.interceptPop(); // un-intercept
+    selblocks.fn.interceptPush(targetObj, targetFnName, function(){
+      selblocks.fn.interceptPop(); // un-intercept
       var args = Array.prototype.slice.call(arguments);
       _fn.apply(this, args);    });
   };
