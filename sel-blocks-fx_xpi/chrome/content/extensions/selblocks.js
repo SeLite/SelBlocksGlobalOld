@@ -1058,7 +1058,7 @@ var expandStoredVars;
     var promiseOrResult= this.evalWithExpandedStoredVars(condExpr);
     return this.handlePotentialPromise(
         promiseOrResult,
-        (value) => {
+        /*handler:*/(value) => {
             if( !value ) {
               // jump to next elseIf or else or endif
               var ifDef = blkDefFor(ifState);
@@ -1396,8 +1396,9 @@ var expandStoredVars;
           }
           return Stack.isTryBlock(stackFrame);
         }
-      );
-      return (blkDefFor(blkState).nature === "try");
+      )
+      var blkDef= blkDefFor(blkState);
+      return blkDef && blkDef.nature==="try";
     }
     return canBubble;
   };
@@ -1748,7 +1749,7 @@ var expandStoredVars;
     
     return selenium.handlePotentialPromise(
         _condFunc(loopState),
-        value => {
+        /*handler:*/value => {
             if( !value ) {
               loopState.isComplete = true;
               // jump to bottom of loop for exit
@@ -1831,8 +1832,6 @@ var expandStoredVars;
     if( argSpec && typeof argSpec!=='object' ) {
       this.assertCompilable("var ", argSpec, ";", "Invalid call parameter(s)");
     }
-    var funcIdx = symbols[funcName];
-    assert(funcIdx!==undefined, " Function does not exist: " + funcName + ".");
     
     var activeCallFrame = callStack.top();
     if (activeCallFrame.isReturning && activeCallFrame.returnIdx === idxHere()) {
@@ -1847,6 +1846,10 @@ var expandStoredVars;
       assert( testCase===popped.testCase, "The popped testCase is different." ); // Not sure why, but this seems to be true.
     }
     else {
+      var funcIdx = symbols[funcName];
+      // classic SelBlocks used to have the following check before the above if(). However, that failed on the second processing (when exiting from a function) if the function name was programmatic in Selenese - from ${stored-variable-name} or javascript{js-expression}, e.g. call | ${func-name}.
+      assert(funcIdx!==undefined, " Function does not exist: " + funcName + ".");
+      
       LOG.debug('doCall invokedFromJavascript: ' +invokedFromJavascript+ ', callFromAsync: ' +callFromAsync);
       if( callFromAsync ) {
           assert(!this.invokedFromAsync, "invokedFromAsync is already set. Do not use callFromAsync() until the previous flow ends." );
@@ -2742,9 +2745,10 @@ var expandStoredVars;
      *  - immediately if !withPromise, or
      *  - once the promise resolved (which can also be immediately), but not if it resolved after timing out
      *  @param {boolean} [withPromise=false] Whether promiseOrResult should be a Promise, or not. This function validated promiseOrResult accordingly..
-     *  @return {(function|undefined)} Exactly if withPromise, then return a function to return back to Selenium (that will be used as continuation test) that checks the promise status of and promiseOrResult and it throws on timeout. Otherwise (i.e. !withPromise) return undefined (i.e. no need for a continuation test).
+     *  @param {boolean} asGetAccessor Whether used from getXyz (as opposed to being used from doXyz). Do not use for its derivatives storeXyz|(assert|verify)(Not)?Xyz. See doStorePromised.
+     *  @return {(function|undefined)} Exactly if withPromise, then return a function to return back to Selenium (that will be used as a continuation test) that checks the promise status of and promiseOrResult and it throws on timeout. Otherwise (i.e. !withPromise) return undefined (i.e. no need for a continuation test).
      * */
-    Selenium.prototype.handlePotentialPromise= function handlePotentialPromise( promiseOrResult, handler=undefined, withPromise=false ) {
+    Selenium.prototype.handlePotentialPromise= function handlePotentialPromise( promiseOrResult, handler=undefined, withPromise=false, asGetAccessor=false ) {
         Selenium.ensureThenableOrNot( promiseOrResult, withPromise );
         if( !withPromise ) {
             if( handler ) {
@@ -2759,13 +2763,18 @@ var expandStoredVars;
                 failure=> { failed= true; result= failure; }
             );
             // Check the timeout. Otherwise, if the promise never resolved, then Selenium would call the termination function indefinitely in the background, without any error about it!
-            return Selenium.decorateFunctionWithTimeout(
+            var decoratedWithTimeout= Selenium.decorateFunctionWithTimeout(
                 () => {
                     if( succeeded ) {
                         if( handler ) {
                             handler( result );
                         }
                         return true;
+                        /* // Needed only if this were used by derivatives:
+                         // false indicates continuation. Hence wrap any false or equivalent value.
+                        return result
+                            ? result
+                            : {promiseResult: result};*/
                     }
                     if( failed ) {
                         throw new SeleniumError( result );
@@ -2773,31 +2782,75 @@ var expandStoredVars;
                 },
                 this.defaultTimeout
             );
+            return asGetAccessor
+                ? {terminationCondition: decoratedWithTimeout}
+                : decoratedWithTimeout;
         }
     };
     
-    Selenium.prototype.actionStorePromiseValue= function actionStorePromiseValue( script, variableName ) {
+    // Promise -> wait until it resolves. Only used when executing 'getEval', not its derivatives.
+    Selenium.prototype.getPromised= function getPromised( script ) {
         return this.handlePotentialPromise(
             this.getEval( script ), // promise
-            value => {
-                if( variableName!==undefined ) {
-                    storedVars[variableName]= value;
-                }
-            },
-            true
+            /*handler*/undefined,
+            /*withPromise:*/true,
+            /*asGetAccessor:*/true
         );
     };
     
-    Selenium.prototype.doStorePromiseValue= function doStorePromiseValue( script, variableName ) {
-        return this.actionStorePromiseValue( script, variableName );
+    Selenium.prototype.doVerifyPromised= function doVerifyPromised( script, pattern ) {
+        return this.validatePromised( script, pattern );
+    }
+    Selenium.prototype.doAssertPromised= function doAssertPromised( script, pattern ) {
+        return this.validatePromised( script, pattern, true );
+    };
+    Selenium.prototype.doVerifyNotPromised= function doVerifyNotPromised( script, pattern ) {
+        return this.validatePromised( script, pattern, false, true );
+    };
+    Selenium.prototype.doAssertNotPromised= function doAssertNotPromised( script, pattern ) {
+        return this.validatePromised( script, pattern, true, true );
     };
     
-    Selenium.prototype.doPromise= function doPromise( script ) {
-        return this.actionStorePromiseValue( script );
+    function VerifyOrAssertError( message ) {
+        this.isSeleniumError = true;
+        this.message = message;
+        this.stack= ''; // Need to have this set. Otherwise SeLiteMisc didn't treat this as an error: it didn't use its .message, and it applied toString() instead. We set it to empty - we don't need this stack trace in the log, because it's a feature and not a JS error.
+    }
+    
+    /** @param {string} script Javascript that yields a Promise.
+     *  @param {string} pattern String or regex.
+     *  @param {boolean} asAssert Whether to assert (rather than verify).
+     *  @param {boolean} negative Whether to validate negatively (like (assert|verify)NotXyz
+     * */
+    Selenium.prototype.validatePromised= function validatePromised( script, pattern, asAssert=false, negative=false ) {
+        return this.handlePotentialPromise(
+            this.getEval( script ),
+            /*handler*/ value => {
+                if( PatternMatcher.matches( pattern, ''+value )===negative ) {
+                    var error= new VerifyOrAssertError( "Promise resolved to value: " +value+ ", which " +
+                        (negative
+                            ? "matches (but shouldn't match): "
+                            : "doesn't match: "
+                        )+ pattern
+                    );
+                    if( !asAssert ) {
+                        error.seLiteVerification= true;
+                    }
+                    throw error;
+                }
+            },
+            /*withPromise:*/true
+        );
     };
     
-    Selenium.prototype.doPromise= function doPromise( script ) {
-        return this.actionStorePromiseValue( script );
+    // This has to be defined as doStorePromised, rather than using automatic storeXyz handlers generated by Selenium for getXyz. Those automatic handlers don't honour terminationCondition field in the result. An alternative would be to override CommandHandlerFactory.prototype._registerStoreCommandForAccessor, but that CommandHandlerFactory was not in Core scope when a Core extension is loaded (it gets to that scope only later).
+    Selenium.prototype.doStorePromised= function doStorePromised( script, storedVariableName ) {
+        return this.handlePotentialPromise(
+            this.getEval( script ), // promise
+            /*handler*/value => storedVars[storedVariableName]= value,
+            /*withPromise:*/true
+        );
+
     };
     
     var OS= Components.utils.import("resource://gre/modules/osfile.jsm", {}).OS;
@@ -2846,7 +2899,7 @@ BrowserBot.prototype.findElements
     if( locator.type==='xpath' || locator.type==='implicit' && locator.string.startsWith('//') ) {
         return this.locateElementsByXPath( locator.string, win.document );
     }
-    else {debugger;
+    else {
         var element= this.findElementOrNull( locator.string, win );
         return element
             ? [ core.firefox.unwrap(element) ]

@@ -41,7 +41,12 @@ selblocks= selblocks;
       }
       else {
         this._handleCommandError(e); // causes command to be marked in red
-        this.testComplete();
+        if( 'seLiteVerification' in e ) {
+            this.continueTest();
+        }
+        else {
+            this.testComplete();
+        }
       }
   };
   
