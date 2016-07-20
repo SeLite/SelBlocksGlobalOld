@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://change-this-to-the-site-you-are-testing/" />
+<title>promised_case</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">promised_case</td></tr>
+</thead><tbody>
+<tr>
+	<td>getPromised</td>
+	<td>Promise.resolve(1)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>storePromised</td>
+	<td>Promise.resolve(1)</td>
+	<td>one</td>
+</tr>
+<tr>
+	<td>assertEval</td>
+	<td>$one</td>
+	<td>1</td>
+</tr>
+<!---->
+<!--positive:-->
+<tr>
+	<td>verifyPromised</td>
+	<td>Promise.resolve(1)</td>
+	<td>regexp:1</td>
+</tr>
+<tr>
+	<td>verifyNotPromised</td>
+	<td>Promise.resolve(1)</td>
+	<td>2</td>
+</tr>
+<tr>
+	<td>assertPromised</td>
+	<td>Promise.resolve(1)</td>
+	<td>1</td>
+</tr>
+<tr>
+	<td>assertNotPromised</td>
+	<td>Promise.resolve(1)</td>
+	<td>glob:two</td>
+</tr>
+<!---->
+<!--negative:-->
+<tr>
+	<td>function</td>
+	<td>verifyPromisedFail</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;verifyPromised</td>
+	<td>Promise.resolve(2)</td>
+	<td>regexp:1</td>
+</tr>
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>call</td>
+	<td>assertFunctionFailure</td>
+	<td>func='verifyPromisedFail'</td>
+</tr>
+<!---->
+<tr>
+	<td>function</td>
+	<td>verifyNotPromisedFail</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;verifyNotPromised</td>
+	<td>Promise.resolve(2)</td>
+	<td>glob:2</td>
+</tr>
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>call</td>
+	<td>assertFunctionFailure</td>
+	<td>func='verifyNotPromisedFail'</td>
+</tr>
+<!---->
+<tr>
+	<td>function</td>
+	<td>assertPromisedFail</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;assertPromised</td>
+	<td>Promise.resolve(2)</td>
+	<td>3</td>
+</tr>
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>call</td>
+	<td>assertFunctionFailure</td>
+	<td>func='assertPromisedFail'</td>
+</tr>
+<!---->
+<tr>
+	<td>function</td>
+	<td>assertNotPromisedFail</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;assertNotPromised</td>
+	<td>Promise.resolve(2)</td>
+	<td>glob:2</td>
+</tr>
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>call</td>
+	<td>assertFunctionFailure</td>
+	<td>func='assertNotPromisedFail'</td>
+</tr>
+<!---->
+<!--Move to a negative case & suite:-->
+<tr>
+	<td>function</td>
+	<td>empty</td>
+	<td></td>
+</tr>
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<!---->
+<tr>
+	<td>call</td>
+	<td>assertFunctionFailure</td>
+	<td>func='empty'</td>
+</tr>
+</tbody></table>
+</body>
+</html>

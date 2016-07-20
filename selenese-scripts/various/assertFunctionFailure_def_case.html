@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://change-this-to-the-site-you-are-testing/" />
+<title>assertFunctionFailure_def_case</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">assertFunctionFailure_def_case</td></tr>
+</thead><tbody>
+<tr>
+	<td>function</td>
+	<td>assertFunctionFailure</td>
+	<td>func</td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>$hasFailed= false</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;try</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call</td>
+	<td>${func}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;catch</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>$hasFailed= true</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;endTry</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;assertEval</td>
+	<td>$hasFailed</td>
+	<td>true</td>
+</tr>
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<!--Its test:-->
+<tr>
+	<td>function</td>
+	<td>assertFunctionFailure_test</td>
+	<td></td>
+</tr>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
+	<td>throw new Error('test')</td>
+	<td>regexp:1</td>
+</tr>
+<tr>
+	<td>endFunction</td>
+	<td></td>
+	<td></td>
+</tr>
+<tr>
+	<td>call</td>
+	<td>assertFunctionFailure</td>
+	<td>func='assertFunctionFailure_test'</td>
+</tr>
+
+</tbody></table>
+</body>
+</html>
