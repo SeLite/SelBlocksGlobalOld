@@ -12,7 +12,7 @@
 <tr><td rowspan="1" colspan="3">ifPromise_case</td></tr>
 </thead><tbody>
 <tr>
-	<td>storePromiseValue</td>
+	<td>storePromised</td>
 	<td>new Promise( (resolve)=&gt;{ resolve(true); } )</td>
 	<td>resolvedTrue</td>
 </tr>
@@ -22,7 +22,7 @@
 	<td>true</td>
 </tr>
 <tr>
-	<td>storePromiseValue</td>
+	<td>storePromised</td>
 	<td>new Promise( (resolve)=&gt;{ resolve(false); } )</td>
 	<td>resolvedFalse</td>
 </tr>
@@ -32,12 +32,12 @@
 	<td>false</td>
 </tr>
 <tr>
-	<td>storePromiseValue</td>
+	<td>storePromised</td>
 	<td>new Promise( (resolve)=&gt;{ resolve(undefined); } )</td>
 	<td>undefined</td>
 </tr>
 <tr>
-	<td>storePromiseValue</td>
+	<td>storePromised</td>
 	<td>new Promise( (resolve)=&gt;{ resolve(null); } )</td>
 	<td>null</td>
 </tr>
@@ -104,7 +104,7 @@
 	<td></td>
 </tr>
 <tr>
-	<td>&nbsp;&nbsp;&nbsp;&nbsp;storePromiseValue</td>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;storePromised</td>
 	<td>new Promise( ()=&gt;{} )</td>
 	<td>never</td>
 </tr>

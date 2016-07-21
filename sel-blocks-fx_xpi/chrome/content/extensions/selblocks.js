@@ -537,6 +537,9 @@ var expandStoredVars;
     }
     catch (err) {
       // Don't run this.doExitTest(); here - because it uses $$.tcf, which wasn't set yet.
+      if( 'isSeleniumError' in err ) {
+          err.stack= ''; // No need to overwhelm the user
+      }
       notifyFatalErr("In " + err.fileName + " @" + err.lineNumber + ": " + err, err);
     }
     callStack = new Stack();
@@ -2134,8 +2137,9 @@ var expandStoredVars;
   };
   var notifyFatal= function notifyFatal(msg) {
     var err = new Error(msg);
-    $$.LOG.error("Error " + msg);
-    $$.LOG.logStackTrace(err);
+    /*$$.LOG.error("Error " + msg);
+    $$.LOG.logStackTrace(err);*/
+    err.isSeleniumError= true;
     throw err;
   };
   var notifyFatalCmdRef= function notifyFatalCmdRef(idx, msg) { notifyFatal(fmtCmdRef(idx) + msg); };
@@ -2172,7 +2176,8 @@ var expandStoredVars;
       this.evalWithExpandedStoredVars("function selblocksTemp() { " + left + stmt + right + " }");
     }
     catch (e) {
-      throw new SyntaxError(fmtCmdRef(idxHere()) + " " + explanation + " '" + stmt +  "': " + e.message);
+      var error= new SyntaxError(fmtCmdRef(idxHere()) + " " + explanation + " '" + stmt +  "': " + e.message);
+      throw error;
     }
   };
 
@@ -2692,7 +2697,9 @@ var expandStoredVars;
         }
     };
     
-    /* We don't define Selenium.prototype.getPromise. When it used similar code to the following (i.e. returning an anonymous object with terminationCondition), then automatically-generated storePromise couldn't store the success result. Instead, it stored the anonymous object that contained terminationCondition.
+    /* The following comment is out of date - see also getPromised().
+       ----
+     We don't define Selenium.prototype.getPromise. When it used similar code to the following (i.e. returning an anonymous object with terminationCondition), then automatically-generated storePromise couldn't store the success result. Instead, it stored the anonymous object that contained terminationCondition.
     Selenium.prototype.getPromiseViaGet= function getOrStorePromise( script ) {
         var promise= this.getEval( script );
         if( !promise || !('then' in promise) ) {
@@ -2743,7 +2750,8 @@ var expandStoredVars;
      *  @param {(*|Promise)} promiseOrResult
      *  @param {function} [handler] A callback function. If present, this will invoke it either
      *  - immediately if !withPromise, or
-     *  - once the promise resolved (which can also be immediately), but not if it resolved after timing out
+     *  - once the promise resolved (which can also be immediately), but not if it resolved after timing out.
+     *  It's intended for internal handling to control Selenium flow. See cascadeElseIf(). For a chain of Promise handlers use promise.then(...) instead, and pass the compound promise as parameter promiseOrResult.
      *  @param {boolean} [withPromise=false] Whether promiseOrResult should be a Promise, or not. This function validated promiseOrResult accordingly..
      *  @param {boolean} asGetAccessor Whether used from getXyz (as opposed to being used from doXyz). Do not use for its derivatives storeXyz|(assert|verify)(Not)?Xyz. See doStorePromised.
      *  @return {(function|undefined)} Exactly if withPromise, then return a function to return back to Selenium (that will be used as a continuation test) that checks the promise status of and promiseOrResult and it throws on timeout. Otherwise (i.e. !withPromise) return undefined (i.e. no need for a continuation test).
@@ -2752,8 +2760,11 @@ var expandStoredVars;
         Selenium.ensureThenableOrNot( promiseOrResult, withPromise );
         if( !withPromise ) {
             if( handler ) {
-                handler( promiseOrResult );
+                promiseOrResult= handler( promiseOrResult );
             }
+            return asGetAccessor
+                ? promiseOrResult
+                : undefined;
         }
         else {
             var succeeded, failed;
@@ -2767,14 +2778,13 @@ var expandStoredVars;
                 () => {
                     if( succeeded ) {
                         if( handler ) {
-                            handler( result );
+                            result= handler( result );
                         }
-                        return true;
-                        /* // Needed only if this were used by derivatives:
-                         // false indicates continuation. Hence wrap any false or equivalent value.
+                        // Needed only if this were used by derivatives of getXyz():
+                        // false indicates continuation. Hence wrap any false or equivalent value.
                         return result
                             ? result
-                            : {promiseResult: result};*/
+                            : {promiseResult: result};
                     }
                     if( failed ) {
                         throw new SeleniumError( result );
@@ -2788,14 +2798,16 @@ var expandStoredVars;
         }
     };
     
+    /** A shortcut to handlePotentialPromise(). See handlePotentialPromise() for parameters.
+     *  @return {function}
+     * */
+    Selenium.prototype.handlePromise= function handlePromise( promise, handler=undefined, asGetAccessor=false ) {
+        return this.handlePotentialPromise( promise, handler, /*withPromise*/true, asGetAccessor );
+    };
+    
     // Promise -> wait until it resolves. Only used when executing 'getEval', not its derivatives.
     Selenium.prototype.getPromised= function getPromised( script ) {
-        return this.handlePotentialPromise(
-            this.getEval( script ), // promise
-            /*handler*/undefined,
-            /*withPromise:*/true,
-            /*asGetAccessor:*/true
-        );
+        return this.handlePromise( this.getEval( script ), /*handler*/undefined, /*asGetAccessor:*/true );
     };
     
     Selenium.prototype.doVerifyPromised= function doVerifyPromised( script, pattern ) {
@@ -2823,7 +2835,7 @@ var expandStoredVars;
      *  @param {boolean} negative Whether to validate negatively (like (assert|verify)NotXyz
      * */
     Selenium.prototype.validatePromised= function validatePromised( script, pattern, asAssert=false, negative=false ) {
-        return this.handlePotentialPromise(
+        return this.handlePromise(
             this.getEval( script ),
             /*handler*/ value => {
                 if( PatternMatcher.matches( pattern, ''+value )===negative ) {
@@ -2838,19 +2850,18 @@ var expandStoredVars;
                     }
                     throw error;
                 }
-            },
-            /*withPromise:*/true
+            }
         );
     };
     
     // This has to be defined as doStorePromised, rather than using automatic storeXyz handlers generated by Selenium for getXyz. Those automatic handlers don't honour terminationCondition field in the result. An alternative would be to override CommandHandlerFactory.prototype._registerStoreCommandForAccessor, but that CommandHandlerFactory was not in Core scope when a Core extension is loaded (it gets to that scope only later).
     Selenium.prototype.doStorePromised= function doStorePromised( script, storedVariableName ) {
-        return this.handlePotentialPromise(
-            this.getEval( script ), // promise
-            /*handler*/value => storedVars[storedVariableName]= value,
-            /*withPromise:*/true
-        );
-
+        return this.handlePromise( this.getEval( script ), /*handler*/value => storedVars[storedVariableName]= value );
+    };
+    
+    /** In addition to using in Selenese, this also serves as a part of other doXyz actions. */
+    Selenium.prototype.doPromise= function doPromise( script ) {
+        return this.handlePromise( this.getEval( script ) );
     };
     
     var OS= Components.utils.import("resource://gre/modules/osfile.jsm", {}).OS;
