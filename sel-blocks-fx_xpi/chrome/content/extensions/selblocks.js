@@ -2746,7 +2746,8 @@ var expandStoredVars;
     };
     
     /** This functions streamlines handling of Promise (or potentially Promise) results in Selenese commands.
-     *  Call it from Selenium.prototype.doYourFunction(first, second) and return its result value. That ensures the mechanism works for promiseOrResult being either a Promise or a non-Promise.
+     *  Call it from Selenium.prototype.doXyz(first, second) and return its result value. That ensures the mechanism works for promiseOrResult being either a Promise or a non-Promise.
+     *  Call it from Selenium.prototype.getXyz(param). However, do not use auto-generated storeXyz, because that doesn't work with promise (with timeout decoration) (as of Selenium 2.9.1).
      *  @param {(*|Promise)} promiseOrResult
      *  @param {function} [handler] A callback function. If present, this will invoke it either
      *  - immediately if !withPromise, or
@@ -2754,7 +2755,7 @@ var expandStoredVars;
      *  It's intended for internal handling to control Selenium flow. See cascadeElseIf(). For a chain of Promise handlers use promise.then(...) instead, and pass the compound promise as parameter promiseOrResult.
      *  @param {boolean} [withPromise=false] Whether promiseOrResult should be a Promise, or not. This function validated promiseOrResult accordingly..
      *  @param {boolean} asGetAccessor Whether used from getXyz (as opposed to being used from doXyz). Do not use for its derivatives storeXyz|(assert|verify)(Not)?Xyz. See doStorePromised.
-     *  @return {(function|undefined)} Exactly if withPromise, then return a function to return back to Selenium (that will be used as a continuation test) that checks the promise status of and promiseOrResult and it throws on timeout. Otherwise (i.e. !withPromise) return undefined (i.e. no need for a continuation test).
+     *  @return {(function|value|undefined)} Exactly if withPromise, then return a function to return back to Selenium (that will be used as a continuation test) that checks the promise status of and promiseOrResult and it throws on timeout. Otherwise (i.e. !withPromise) return the value (if asGetAccessor is true) or undefined (i.e. no need for a continuation test).
      * */
     Selenium.prototype.handlePotentialPromise= function handlePotentialPromise( promiseOrResult, handler=undefined, withPromise=false, asGetAccessor=false ) {
         Selenium.ensureThenableOrNot( promiseOrResult, withPromise );
@@ -2778,13 +2779,9 @@ var expandStoredVars;
                 () => {
                     if( succeeded ) {
                         if( handler ) {
-                            result= handler( result );
+                            handler( result );
                         }
-                        // Needed only if this were used by derivatives of getXyz():
-                        // false indicates continuation. Hence wrap any false or equivalent value.
-                        return result
-                            ? result
-                            : {promiseResult: result};
+                        return true; // The returned value here doesn't matter (as far as it's non-false), since storeXyz doesn't support timeout decoration. Returning false would indicate continuation.
                     }
                     if( failed ) {
                         throw new SeleniumError( result );
