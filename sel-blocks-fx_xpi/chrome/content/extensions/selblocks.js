@@ -2771,8 +2771,8 @@ var expandStoredVars;
             var succeeded, failed;
             var result;
             promiseOrResult.then(
-                value=> { succeeded= true; result= value; },
-                failure=> { failed= true; result= failure; }
+                value=> { result= value; succeeded= true; },
+                failure=> { result= failure; failed= true; }
             );
             // Check the timeout. Otherwise, if the promise never resolved, then Selenium would call the termination function indefinitely in the background, without any error about it!
             var decoratedWithTimeout= Selenium.decorateFunctionWithTimeout(
