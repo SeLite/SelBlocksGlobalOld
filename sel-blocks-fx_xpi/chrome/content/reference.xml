@@ -443,6 +443,11 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
     </comment>
 </function>
 <function name="breakPoint">
-    <comment>Stop execution here as if it were a breakpoint. It allows the user to resume execution via Selenium IDE GUI.</comment>
+    <comment>
+        Stop execution here as if it were a breakpoint. It allows the user to resume execution via Selenium IDE GUI.
+        <br/>Use for debugging only. Don't use when running all suites with Run All Favorites.
+        <br/>
+        This command is a part of SeLite SelBlocks Global.
+    </comment>
 </function>
 </apidoc>
