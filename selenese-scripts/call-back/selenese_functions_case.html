@@ -18,12 +18,12 @@
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;assertEval</td>
-	<td>&nbsp;&nbsp;typeof storedVars.a!=='undefined'</td>
+	<td>&nbsp;&nbsp;typeof $a!=='undefined'</td>
 	<td>true</td>
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;assertEval</td>
-	<td>&nbsp;&nbsp;typeof storedVars.b!=='undefined'</td>
+	<td>&nbsp;&nbsp;typeof $b!=='undefined'</td>
 	<td>true</td>
 </tr>
 <tr>
@@ -39,7 +39,7 @@
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;getEval</td>
-	<td>if( storedVars.shouldFail ) throw new Error(storedVars.shouldFail)</td>
+	<td>if( $shouldFail ) throw new Error(storedVars.shouldFail)</td>
 	<td></td>
 </tr>
 <tr>
@@ -65,7 +65,7 @@
 </tr>
 <tr>
 	<td>&nbsp;&nbsp;&nbsp;&nbsp;getEval</td>
-	<td>if( storedVars.shouldFail ) throw new Error(storedVars.shouldFail)</td>
+	<td>if( $shouldFail ) throw new Error($shouldFail)</td>
 	<td></td>
 </tr>
 <tr>
