@@ -20,10 +20,10 @@
 <tr>
 	<td>call</td>
 	<td>assertReceivedParameters</td>
-	<td>=&lt;&gt;({ a: 1, b:2 })&lt;&gt;</td>
+	<td>@&lt;&gt;({ a: 1, b:2 })&lt;&gt;</td>
 </tr>
 <!-- --- -->
-<!--Check that using @<>....<> with call command fails:-->
+<!--call requires @<>....<> to have non-empty prefix/postfix-->
 <tr>
 	<td>storeEval</td>
 	<td>false</td>
@@ -37,10 +37,10 @@
 <tr>
 	<td>&nbsp;&nbsp;call</td>
 	<td>func</td>
-	<td>unusedParameter=1@&lt;&gt;'Hi'&lt;&gt;</td>
+	<td>nonEmptyPrefix @&lt;&gt;'Hi'&lt;&gt;</td>
 </tr>
 <tr>
-	<td>&nbsp;&nbsp;catch</td>
+	<td>catch</td>
 	<td>/.*/</td>
 	<td></td>
 </tr>
@@ -50,7 +50,7 @@
 	<td>seleneseCallFailed</td>
 </tr>
 <tr>
-	<td>&nbsp;&nbsp;finally</td>
+	<td>finally</td>
 	<td></td>
 	<td></td>
 </tr>
@@ -68,7 +68,7 @@
 <tr>
 	<td>call</td>
 	<td>func</td>
-	<td>=&lt;&gt;({ unusedParam: 'Hi' })&lt;&gt;</td>
+	<td>@&lt;&gt;({ unusedParam: 'Hi' })&lt;&gt;</td>
 </tr>
 <!---->
 <tr>
@@ -84,7 +84,7 @@
 <tr>
 	<td>&nbsp;&nbsp;call</td>
 	<td>func</td>
-	<td>=&lt;&gt;({ shouldFail: true })&lt;&gt;</td>
+	<td>@&lt;&gt;({ shouldFail: true })&lt;&gt;</td>
 </tr>
 <tr>
 	<td>catch</td>

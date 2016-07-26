@@ -1821,7 +1821,7 @@ var expandStoredVars;
   /** Note: See also ThirdPartyIssues.md > https://github.com/SeleniumHQ/selenium/issues/1635
    * If callFromAsync, then either onSuccess or onFailure will be called on success or failure, respectively. It will be invoked asynchronously, *after* returning back to Javascript caller (i.e. to a non-Selenese layer that invoked this doCall()).
    * @param {string} funcName
-   * @param {string|object} argSpec Comma-separated assignments of Selenese function parameters. Or an object (easily passed within =<>...<> as per http://selite.github.io/EnhancedSelenese) - then its fields define the Selenese function parameters. See reference.xml.
+   * @param {string|object} argSpec Comma-separated assignments of Selenese function parameters. Or an object (easily passed within @<>...<> as per http://selite.github.io/EnhancedSelenese) - then its fields define the Selenese function parameters. See reference.xml.
    * @param {boolean} [invokedFromJavascript=false] Whether invoked from Javascript (rather than directly from Selenese)
    * @param {function} [onSuccess] Callback function. Only used if invokedFromJavascript==true.
    * @param {function} [onFailure] Callback function. Only used if invokedFromJavascript==true.
@@ -1860,9 +1860,10 @@ var expandStoredVars;
       }
       var args;
       if( typeof argSpec==='object' ) {
-        !( 'seLiteExtra' in argSpec ) || SeLiteMisc.fail( "Don't use @<>...<> with Selenese call command." );
+        'seLiteExtra' in argSpec || SeLiteMisc.fail( "You passed an object to Selenese call command in parameter argSpec, but you didn't use @<>...<>." );
         // Parameters were passed in an object.
-        args= argSpec;
+        argSpec.toString()==='' || SeLiteMisc.fail( 'The string before/after @<>...<> should be empty.' );
+        args= argSpec.seLiteExtra;
       }
       else {
         // Support $stored-variablename
@@ -1915,23 +1916,33 @@ var expandStoredVars;
       setNextCommand(funcIdx);
     }
   };
-  
+
+ var treatCallBackSeleneseParameters= function treatCallBackSeleneseParameters( seleneseParameters ) {
+     if( typeof seleneseParameters==='object' ) {
+        !('seLiteExtra' in seleneseParameters) || SeLiteMisc.fail( "Don't use seLiteExtra in seleneseParameters." );
+        seleneseParameters= {seLiteExtra: seleneseParameters};
+     }
+     return seleneseParameters;
+ };
+ 
   /** 'Synchronous' - i.e. for Javascript that is invoked from a Selenese script that is already running (via getEval or via custom Selenese command). It runs SelBlocks Global 'call' command for given Selenese function *after* the current Selenese command (i.e. getVal or custom Selenese command) finishes.
    * @param {string} seleneseFunctionName Selenese function name.
-   * @param {string|object} seleneseParameters Selenese function parameters. See doCall().
+   * @param {string|object} seleneseParameters See #callBackOutFlow().
    * @TODO test stored var _result
    * */
   Selenium.prototype.callBackInFlow= function callBackInFlow( seleneseFunctionName, seleneseParameters={} ) {
+      seleneseParameters= treatCallBackSeleneseParameters( seleneseParameters );
       localIdxHere()+1<testCase.commands.length || SeLiteMisc.fail( "Do not invoke selenium.callBackInFlow() from the very last command if a test case." );
       this.doCall( seleneseFunctionName, seleneseParameters, /*invokedFromJavascript*/true );
   };
   
   /** 'Asynchronous'- i.e. for Javascript invoked through e.g. SeLite Preview after a Selenese run finished.
    * @param {string} seleneseFunctionName Selenese function name.
-   * @param {string|object} seleneseParameters Selenese function parameters. See doCall().
+   * @param {string|object} seleneseParameters Selenese function parameters. If it's an object, it must be in form {seleneseParameterName: value, ...}. If it's a string, it is as per doCall(), except that it must not contain <>...<>.
    * @return {Promise} A Promise object that will receive a Selenese return value on success, or an exception on failure. (It will be called after the Selenese run flow finished - i.e. through window.setTimeout().)
    */
   Selenium.prototype.callBackOutFlow= function callBackOutFlow( seleneseFunctionName, seleneseParameters='') {
+    seleneseParameters= treatCallBackSeleneseParameters( seleneseParameters );
     var funcIdx= symbols[seleneseFunctionName];
     testCase= localCase( funcIdx );
     LOG.debug('callBackOutFlow()');
