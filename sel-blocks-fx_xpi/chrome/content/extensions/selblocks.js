@@ -109,6 +109,9 @@ function $X(xpath, contextNode, resultType) {
   return nodes;
 }
 
+var loadedTimes= SeLiteExtensionSequencer.coreExtensionsLoadedTimes['SeLiteSelBlocksGlobal'] || 0;
+// We run this file both times Selenium IDE loads it. However, we need `loadedTimes` for targetting overload of LOG.log.
+
 /** @type {function}
  */
 var expandStoredVars;
@@ -2519,7 +2522,35 @@ var expandStoredVars;
     }
     return requester;
   };
-
+  
+  // Override LOG.log() from content/selenium-runner.js. That function stores all messages, no matter what level.
+  // Do not override Logger.prototype.log() from selenium-core/scripts/selenium-logging.js. That function actually prints messages, and only those that are above the filter threshold.
+  // When Selenium IDE loads this file (selblocks.js) for the first time, LOG.log comes from Logger.prototype.log() in selenium-logging.js. (It also has the order of parameters reverse  to LOG.log() from content/selenium-runner.js!)
+  // Selenium IDE loads LOG.log coming from content/selenium-runner.js only *after* the second load of this file (selblocks.js). Hence window.setTimeout() here.
+  if( loadedTimes===1 ) { // Overload LOG.log only after the second run
+    window.setTimeout( function() {
+        // Identical to indentationStep() in clibpard-and-indent
+        var indentationStep= function indentationStep() { // If this turns out to be a bottleneck, then create a suite-change handler, retrieve indentationStep from there and cache it
+            if( typeof SeLiteSettings!==undefined ) {
+                var settingsModule= SeLiteSettings.Module.forName( 'extensions.selite-settings.common' );
+                var fieldsDownToFolder= settingsModule.getFieldsDownToFolder();
+                return fieldsDownToFolder['indentationStep'].entry;
+            }
+            else {
+                return 4;
+            }
+        };
+    
+        var traditionalLog= LOG.log; // Same as SeLiteMisc.log()
+        LOG.log= function log( message, level ) {
+            var indentation= callStack
+                // Can't use blank spaces, because they get shortened. Can't use &nbsp; or &#160;
+                ? ".".repeat( callStack.length*indentationStep() )
+                : '';
+            traditionalLog.call( this, indentation+message, level );
+        };
+    }, 0 );
+  }
 }(selblocks));
 
 (function() {
@@ -2914,3 +2945,5 @@ BrowserBot.prototype.findElements
             : [];
     }
 };
+
+SeLiteExtensionSequencer.coreExtensionsLoadedTimes['SeLiteSelBlocksGlobal']= loadedTimes+1;
