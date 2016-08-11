@@ -2529,23 +2529,23 @@ var expandStoredVars;
   // Selenium IDE loads LOG.log coming from content/selenium-runner.js only *after* the second load of this file (selblocks.js). Hence window.setTimeout() here.
   if( loadedTimes===1 ) { // Overload LOG.log only after the second run
     window.setTimeout( function() {
-        // Identical to indentationStep() in clibpard-and-indent
-        var indentationStep= function indentationStep() { // If this turns out to be a bottleneck, then create a suite-change handler, retrieve indentationStep from there and cache it
-            if( typeof SeLiteSettings!==undefined ) {
+        // Similar idea to indentationStep() in clibpard-and-indent, but here it's cached until a test suite folder change.
+        var indentationStep= 4;
+        if( typeof SeLiteSettings!==undefined ) {
+            var setIndentationStep= () => {
                 var settingsModule= SeLiteSettings.Module.forName( 'extensions.selite-settings.common' );
                 var fieldsDownToFolder= settingsModule.getFieldsDownToFolder();
-                return fieldsDownToFolder['indentationStep'].entry;
-            }
-            else {
-                return 4;
-            }
-        };
+                indentationStep= fieldsDownToFolder['indentationStep'].entry;
+            };
+            SeLiteSettings.addTestSuiteFolderChangeHandler( setIndentationStep );
+            setIndentationStep(); // Because this is called on the first Selenese run
+        }
     
         var traditionalLog= LOG.log; // Same as SeLiteMisc.log()
         LOG.log= function log( message, level ) {
             var indentation= callStack
                 // Can't use blank spaces, because they get shortened. Can't use &nbsp; or &#160;
-                ? ".".repeat( callStack.length*indentationStep() )
+                ? ".".repeat( (callStack.length -1)*indentationStep )
                 : '';
             traditionalLog.call( this, indentation+message, level );
         };
