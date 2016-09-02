@@ -19,7 +19,7 @@
  * - changed 'xyz instanceof Array' to Array.isArray(xyz); this may be needed to recognise Array instances passed from different global scope
  * - similarly, changed xyz.constructor==String to xyz.constructor && xyz.constructor.name==='String'
  * - removed isOneOf, mapTo and translate()
- * - added commands: promise, storePromiseValue, ifPromise...endIfPromise, whilePromise..endWhilePromise
+ * - added commands: promise, storePromised, ifPromise...endIfPromise, whilePromise..endWhilePromise
  * -----------
  * Notes from SelBlocks
  * 
@@ -2916,7 +2916,7 @@ var expandStoredVars;
         // Based on getInterval() in Selenium IDE's chrome/content/debugger.js
         editor.selDebugger.setState(Debugger.PAUSED);
     };
-    //@TODO Override/disable promiseAndWait, storePromiseValueAndWait
+    //@TODO Override/disable: promiseAndWait, storePromisedAndWait
 })();
 
 /** @param {string} locator If non-XPath locator, it must not match more than one element. If XPath locator, it can match multiple elements.

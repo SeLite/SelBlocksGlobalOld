@@ -433,7 +433,7 @@ Xml-stylesheet (whether remote or even local) didn't load up work when you open 
         This command is a part of SeLite SelBlocks Global.
     </comment>
 </function>
-<function name="storePromiseValue">
+<function name="storePromised">
     <param name="script">A Javascript expression that evaluates to a <code>Promise</code>.</param>
     <param name="variableName">Name of a stored variable to save the result value of the promise, if the promise gets resolved successfully.</param>
     <comment>
