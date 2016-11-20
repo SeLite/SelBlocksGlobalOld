@@ -2045,13 +2045,13 @@ var expandStoredVars;
         var expanded= expr!==undefined
             ? expandStoredVars(expr)
             : undefined;
-        LOG.debug( 'Selenium.prototype.evalWithExpandedStoredVars(): ' +expr+ ' expanded to: ' +expanded );
+        LOG.info( 'Expanding JS: ' +expr+ ' to: ' +expanded );
         var window = this.browserbot.getCurrentWindow(); // So that the script can access 'window'
         // EXTENSION REVIEWERS: Use of eval is consistent with the Selenium extension itself.
         // Scripted expressions run in the Selenium window, separate from browser windows.
         // Global functions are intentional features provided for use by end user's in their Selenium scripts.
         var result = eval( expanded );
-        LOG.debug( 'result: ' +typeof result+ ': ' +SeLiteMisc.objectToString(result, 2) );
+        LOG.info( 'result: ' +typeof result+ ': ' +SeLiteMisc.objectToString(result, 2) );
         return result;
       }
       catch (err) {
