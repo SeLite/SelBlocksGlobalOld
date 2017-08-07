@@ -1,7 +1,7 @@
 "use strict";
 var EXPORTED_SYMBOLS= ['Flag'];
 
-// I access this file in two ways: from browser.xul, and also as a JS code module via Components.utils.import(), importing itself when invoked from browser.xul. Following if() tells me how this file is being accessed.
+// I access this file in two ways: from browser.xul, and also as a JS code module via Cu.import(), importing itself when invoked from browser.xul. Following if() tells me how this file is being accessed.
 if( typeof window!=='undefined' ) {
     // Anonymous function puts variables into local scope. Otherwise I had symbols 'thisAddOnChrome' and function showAlert shared across multiple SeLite add-ons, which caused problems when showAlert() shows delayed.
     ( function() {
@@ -32,14 +32,14 @@ if( typeof window!=='undefined' ) {
         };
         try {
             // Test presence of Extension Sequencer
-            Components.utils.import("chrome://selite-extension-sequencer/content/SeLiteExtensionSequencer.js");
+            Cu.import("chrome://selite-extension-sequencer/content/SeLiteExtensionSequencer.js");
         }
         catch(e) {
             // Load this file itself as a JS code module, so that it shares Flag object across windows:
             var sharedScope= {};
-            Components.utils.import( thisAddOnChrome+ "/content/extensions/browser.js", sharedScope );
+            Cu.import( thisAddOnChrome+ "/content/extensions/browser.js", sharedScope );
             if( !sharedScope.Flag.alertShown ) {
-                Components.utils.import("resource://gre/modules/AddonManager.jsm");
+                Cu.import("resource://gre/modules/AddonManager.jsm");
                 AddonManager.getAllAddons(
                     function( addons ) {
                         // I sort the add-ons alphabetically by ID. I want to show only one alert even if there are multiple SeLite XPIs or other XPIs that use Extension Sequencer.So I show the alert in the add-on which is the first on the list of SeLite add-ons (when sorted by ID in the alphabetical order).

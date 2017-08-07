@@ -2892,8 +2892,8 @@ var expandStoredVars;
         return this.handlePromise( this.getEval( script ) );
     };
     
-    var OS= Components.utils.import("resource://gre/modules/osfile.jsm", {}).OS;
-    var Downloads= Components.utils.import("resource://gre/modules/Downloads.jsm", {} ).Downloads;
+    var OS= Cu.import("resource://gre/modules/osfile.jsm", {}).OS;
+    var Downloads= Cu.import("resource://gre/modules/Downloads.jsm", {} ).Downloads;
     
     /** Start downloading a file.
      *  @param {string] url Full URL.
