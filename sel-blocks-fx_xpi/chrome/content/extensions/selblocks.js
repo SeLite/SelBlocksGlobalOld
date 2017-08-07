@@ -1,5 +1,5 @@
 /* Copyright 2011 Chris Noe
- * Copyright 2011, 2012, 2013, 2014, 2015, 2016 Peter Kehl
+ * Copyright 2011, 2012, 2013, 2014, 2015, 2016, 2017 Peter Kehl
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 1.1. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/1.1/.
@@ -1686,7 +1686,7 @@ var expandStoredVars;
     enterLoop(
       function doForJsonValidate(loop) {  // validate
           assert(jsonpath, " Requires a JSON file path or URL.");
-          loop.jsonReader = new $$.fn.JSONReader();
+          loop.jsonReader = new JSONReader();
           var localVarNames = loop.jsonReader.load(jsonpath);
           return localVarNames;
       }
@@ -1708,7 +1708,7 @@ var expandStoredVars;
     enterLoop(
       function doForXmlValidate(loop) {  // validate
           assert(xmlpath, " 'forXml' requires an XML file path or URL.");
-          loop.xmlReader = new $$.fn.XmlReader();
+          loop.xmlReader = new XmlReader();
           var localVarNames = loop.xmlReader.load(xmlpath);
           return localVarNames;
       }
@@ -2531,7 +2531,7 @@ var expandStoredVars;
     window.setTimeout( function() {
         // Similar idea to indentationStep() in clibpard-and-indent, but here it's cached until a test suite folder change.
         var indentationStep= 4;
-        if( typeof SeLiteSettings!==undefined ) {
+        if( typeof SeLiteSettings!=='undefined' ) {
             var setIndentationStep= () => {
                 var settingsModule= SeLiteSettings.Module.forName( 'extensions.selite-settings.common' );
                 var fieldsDownToFolder= settingsModule.getFieldsDownToFolder();
